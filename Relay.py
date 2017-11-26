@@ -14,3 +14,6 @@ class Relay(object):
     def send(self, msg, ip_dest):
         '''Send this message to the destination'''
         pass
+
+
+        
