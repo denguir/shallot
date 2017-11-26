@@ -2,7 +2,7 @@
 class Relay(object):
     """docstring for Relay."""
     def __init__(self, ip_addr):
-        superRelay, self).__init__()
+        super(Relay, self).__init__()
         self.ip_addr = ip_addr
         self.key = 0
 
