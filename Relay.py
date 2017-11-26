@@ -1,9 +1,10 @@
 
 class Relay(object):
     """docstring for Relay."""
-    def __init__(self, ip_addr):
+    def __init__(self, ip_addr, port):
         superRelay, self).__init__()
         self.ip_addr = ip_addr
+        self.port = port
         self.key = 0
 
     def decrypt(self, encrypted_msg):
