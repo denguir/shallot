@@ -96,16 +96,16 @@ if __name__ == '__main__':
 
     '''TEST Key init between Alice-Bob and Alice-relay1
     Note: IP and Port are not yet implemented'''
-    Alice = Sender('172.16.1.1')
-    Bob = Receiver('172.16.2.1')
-    relay1 = Relay('172.16.3.1','8080')
+    Alice = Sender('')
+    Bob = Receiver('')
+    relay1 = Relay('','')
 
-    Alice.generate_and_send_new_key('172.16.1.1','8080')
-    Bob.generate_key_from_sender('172.16.1.1','8080',1, Alice.keys[1].get_public_key())
+    Alice.generate_and_send_new_key('','')
+    Bob.generate_key_from_sender('','',1, Alice.keys[1].get_public_key())
     Alice.generate_key_from_replier(1,Bob.keys[1].get_public_key())
 
-    Alice.generate_and_send_new_key('172.16.1.1','8080')
-    relay1.generate_key_from_sender('172.16.1.1','8080',2, Alice.keys[2].get_public_key())
+    Alice.generate_and_send_new_key('','')
+    relay1.generate_key_from_sender('','',2, Alice.keys[2].get_public_key())
     Alice.generate_key_from_replier(2,relay1.keys[2].get_public_key())
 
     print("Alice-Bob key:")
@@ -116,3 +116,4 @@ if __name__ == '__main__':
     print("Alice-relay1 key:")
     print(Alice.keys[2].get_shared_key())
     print(relay1.keys[2].get_shared_key())
+    
