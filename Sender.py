@@ -1,4 +1,5 @@
 import random
+import math
 from Topology import Topology
 from Relay import Relay
 from Receiver import Receiver
@@ -14,37 +15,42 @@ class Sender(object):
         self.g = 2
         self.keys = {}
 
-    def find_route(self, topology):
+    def dijkstra(self, topology, source):
         '''
         Apply Dijkstra algorithm to find the route between Sender and Reicever
         https://gist.github.com/econchick/4666413
+        http://alexhwoods.com/dijkstra/
         '''
-        visited = {self.ip_addr: 0}
-        path = {}
-        nodes = set(topology.nodes)
+        S = set()
+        weights = dict.fromkeys(list(topology.nodes), math.inf)
+        previous_path = dict.fromkeys(list(topology.nodes), None)
 
-        while nodes:
-            min_node = None
-            for node in nodes:
-                if node in visited:
-                    if min_node is None:
-                        min_node = node
-                    elif visited[node] < visited[min_node]:
-                        min_node = node
+        weights[source] = 0
+        while S != topology.nodes:
+            v = min((set(weights.keys()) - S), key=weights.get)
 
-            if min_node is None:
-                break
+            for neighbor in set(topology.edges[v]) - S:
+                new_path = weights[v] + topology.costs[v,neighbor]
 
-            nodes.remove(min_node)
-            current_weight = visited[min_node]
+                if new_path < weights[neighbor]:
+                    weights[neighbor] = new_path
+                    previous_path[neighbor] = v
+            S.add(v)
+        return (weights, previous_path)
 
-            for edge in topology.edges[min_node]:
-                weight = current_weight + topology.costs[(min_node, edge)]
-                if edge not in visited or weight < visited[edge]:
-                    visited[edge] = weight
-                    path[edge] = min_node
-
-        return visited, path
+    def shortest_path(self, topology, destination):
+        if destination not in topology.nodes:
+            print('Shortest path research failed:')
+            print('{} not in network'.format(destination))
+        else:
+            weigths, previous_path = self.dijkstra(topology, self.ip_addr)
+            path = []
+            node = destination
+            while node is not None:
+                path.append(node)
+                node = previous_path[node]
+            path.reverse()
+            return path
 
 
     def init_keys(self, conn):
@@ -116,4 +122,6 @@ if __name__ == '__main__':
     print("Alice-relay1 key:")
     print(Alice.keys[2].get_shared_key())
     print(relay1.keys[2].get_shared_key())
-    
+
+    path = Alice.shortest_path(topo, '172.16.3.2')
+    print(path)
