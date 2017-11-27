@@ -45,9 +45,13 @@ class Topology(object):
         self.nodes.add(value)
 
     def add_edge(self, from_node, to_node, distance):
-        self.edges[from_node].append(to_node)
-        self.edges[to_node].append(from_node)
-        self.costs[(from_node, to_node)] = distance
+        if from_node != to_node:
+            self.edges[from_node].append(to_node)
+            self.edges[to_node].append(from_node)
+            self.costs[(from_node, to_node)] = distance
+        else:
+            print("Adding edge failed:")
+            print("<from_node> must be different from <to_node>")
 
 
 if __name__ == '__main__':
