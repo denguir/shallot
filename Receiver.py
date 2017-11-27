@@ -1,20 +1,11 @@
 from Key import Key
 
-class Relay(object):
-    """docstring for Relay."""
-    def __init__(self, ip_addr, port):
-        super(Relay, self).__init__()
+class Receiver(object):
+    """docstring for Receiver."""
+    def __init__(self, ip_addr):
+        super(Receiver, self).__init__()
         self.ip_addr = ip_addr
-        self.port = port
         self.keys = {}
-
-    def decrypt(self, encrypted_msg):
-        ''' decrypt the message sent by previous entity'''
-        pass
-
-    def send(self, msg, ip_dest):
-        '''Send this message to the destination'''
-        pass
 
     def generate_key_from_sender(self, ip_sender, port_sender, key_id, public_key_sender):
         '''1) Generate a public key with the key ID specified by the sender

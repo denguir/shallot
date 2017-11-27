@@ -1,6 +1,9 @@
 import random
 import math
 from Topology import Topology
+from Relay import Relay
+from Receiver import Receiver
+from Key import Key
 
 class Sender(object):
     """docstring for Sender."""
@@ -10,6 +13,7 @@ class Sender(object):
         self.route = []
         self.p = 2**1024
         self.g = 2
+        self.keys = {}
 
     def dijkstra(self, topology, source):
         '''
@@ -64,10 +68,63 @@ class Sender(object):
         '''Send encrypted message to the destination'''
         pass
 
-if __name__ == '__main__':
-    topo = Topology()
-    topo.build('config/topology.ini')
 
+    def generate_and_send_new_key(self, ip_adress, port):
+        '''1) Generate a Key object in which will be stored a unique Key ID and a public key.
+           2) Send the key ID and the public key to the other entities'''
+        key_id = self.generate_key_id()
+        new_key = Key(key_id)
+        self.keys.update({key_id:new_key})
+        self.send_public_key(ip_adress, port, new_key.get_key_id(), new_key.get_public_key())
+
+    def generate_key_id(self):
+        '''Generate the unique key ID.'''
+        key_id = len(self.keys)+1
+        return key_id
+
+    def send_public_key(self, ip_adress, port, key_id, public_key):
+        pass
+
+    def generate_key_from_replier(self, key_id, public_key_replier):
+        '''Generate the shared key between the sender and the replier.'''
+        self.keys[key_id].generate_shared_key(public_key_replier)
+
+
+if __name__ == '__main__':
+    # topo = Topology()
+    # topo.build('config/topology.ini')
+
+    # sender = Sender('172.16.1.1')
+    # visted, path = sender.find_route(topo)
+    # print(visted)
+    # print(path)
+
+
+    '''TEST Key init between Alice-Bob and Alice-relay1
+    Note: IP and Port are not yet implemented'''
+    Alice = Sender('172.16.1.1')
+    Bob = Receiver('172.16.2.1')
+    relay1 = Relay('172.16.3.1','8080')
+
+    Alice.generate_and_send_new_key('172.16.1.1','8080')
+    Bob.generate_key_from_sender('172.16.1.1','8080',1, Alice.keys[1].get_public_key())
+    Alice.generate_key_from_replier(1,Bob.keys[1].get_public_key())
+
+    Alice.generate_and_send_new_key('172.16.1.1','8080')
+    relay1.generate_key_from_sender('172.16.1.1','8080',2, Alice.keys[2].get_public_key())
+    Alice.generate_key_from_replier(2,relay1.keys[2].get_public_key())
+
+    print("Alice-Bob key:")
+    print(Alice.keys[1].get_shared_key())
+    print(Bob.keys[1].get_shared_key())
+
+<<<<<<< HEAD
     sender = Sender('172.16.1.1')
     path = sender.shortest_path(topo, '172.16.3.2')
     print(path)
+=======
+    print("\n")
+    print("Alice-relay1 key:")
+    print(Alice.keys[2].get_shared_key())
+    print(relay1.keys[2].get_shared_key())
+>>>>>>> e44dcd9e14df0b6e97c9d3d12684b8c84fbd9907
