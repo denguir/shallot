@@ -59,10 +59,6 @@ class Sender(object):
         conn.send(init_msg)
         secretkey=conn.rcv(buffer_size)
 
-    def encrypt(self, msg):
-        '''Build the shallot according to the keys generated in init_keys'''
-        pass
-
     def send(self, encrypted_msg, ip_dest):
         '''Send encrypted message to the destination'''
         pass
@@ -87,6 +83,20 @@ class Sender(object):
         '''Generate the shared key between the sender and the replier.'''
         self.keys[key_id].generate_shared_key(public_key_replier)
 
+    def convert_str_to_hex(self, hex_in_str):
+        hex_str = hex_in_str
+        hex_int = int(hex_str, 16)
+        new_int = hex_int + 0x200
+        return (hex(new_int)[2:])
+
+    def encrypt(self, key_id, msg):
+        '''Encrypt the message raw using the AES algorithm'''
+        return self.keys[key_id].cipher.encrypt(msg)
+
+    def decrypt(self, key_id, msg):
+        '''Decrypt the message enc using the AES algorithm'''
+        return self.keys[key_id].cipher.decrypt(msg)
+
 
 if __name__ == '__main__':
     topo = Topology()
@@ -97,31 +107,73 @@ if __name__ == '__main__':
     # print(visted)
     # print(path)
 
-
     '''TEST Key init between Alice-Bob and Alice-relay1
     Note: IP and Port are not yet implemented'''
     Alice = Sender('172.16.1.1')
     Bob = Receiver('')
     relay1 = Relay('','')
+    relay2 = Relay('','')
 
+    '''Key negotiation with Bob'''
     Alice.generate_and_send_new_key('','')
     Bob.generate_key_from_sender('','',1, Alice.keys[1].get_public_key())
     Alice.generate_key_from_replier(1,Bob.keys[1].get_public_key())
 
+    '''Key negotiation with relay1'''
     Alice.generate_and_send_new_key('','')
     relay1.generate_key_from_sender('','',2, Alice.keys[2].get_public_key())
     Alice.generate_key_from_replier(2,relay1.keys[2].get_public_key())
 
+    '''Key negotiation with relay2'''
+    Alice.generate_and_send_new_key('','')
+    relay2.generate_key_from_sender('','',3, Alice.keys[3].get_public_key())
+    Alice.generate_key_from_replier(3,relay2.keys[3].get_public_key())
+
+
     print("Alice-Bob key:")
     print(Alice.keys[1].get_shared_key())
     print(Bob.keys[1].get_shared_key())
-
     print("\n")
+
     print("Alice-relay1 key:")
     print(Alice.keys[2].get_shared_key())
     print(relay1.keys[2].get_shared_key())
+    print('\n')
 
+    print("Alice-relay2 key:")
+    print(Alice.keys[3].get_shared_key())
+    print(relay2.keys[3].get_shared_key())
+    print('\n')
+
+    '''
     print("\n")
     print("shortest path:")
     path = Alice.shortest_path(topo, '172.16.3.2')
-    print(path)
+    print(path, "\n")
+
+    encrypted_Bob = Alice.encrypt(1,'Hello Bob')
+    decrypted_Bob = Bob.decrypt(1,encrypted_Bob)
+    print('Encrypted: %s' % encrypted_Bob)
+    print('Decrypted: %s' % decrypted_Bob,"\n")
+
+    encrypted_relay1 = Alice.encrypt(2,'Hello relay1')
+    decrypted_relay1 = relay1.decrypt(2,encrypted_relay1)
+    print('Encrypted: %s' % encrypted_relay1)
+    print('Decrypted: %s' % decrypted_relay1,"\n")
+    '''
+
+    msg = 'Allah akbar!'
+    print('Message to encrypt 3 times: %s' % msg)
+    encrypted1 = Alice.encrypt(1,msg) # encrypted with Alice-Bob key
+    print('Encrypted 1 time: %s' % encrypted1) 
+    encrypted2 = Alice.encrypt(2,encrypted1) # encrypted with Alice-relay1 key
+    print('Encrypted 2 times: %s' % encrypted2)
+    encrypted3 = Alice.encrypt(3,encrypted2) # encrypted with Alice-relay2 key
+    print('Encrypted 3 times: %s' % encrypted3,"\n")
+
+    decrypted1 = relay2.decrypt(3,encrypted3) # decrypted with Alice-relay2 key
+    print('Decrypted 1 time: %s' % decrypted1) 
+    decrypted2 = relay1.decrypt(2,decrypted1) # decrypted with Alice-relay1 key
+    print('Decrypted 2 time: %s' % decrypted2) 
+    decrypted3 = Bob.decrypt(1,decrypted2) # decrypted with Alice-Bob key
+    print('Decrypted 3 times: %s' % decrypted3)
