@@ -123,5 +123,7 @@ if __name__ == '__main__':
     print(Alice.keys[2].get_shared_key())
     print(relay1.keys[2].get_shared_key())
 
+    print("\n")
+    print("shortest path:")
     path = Alice.shortest_path(topo, '172.16.3.2')
     print(path)
