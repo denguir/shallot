@@ -52,7 +52,6 @@ class Sender(object):
             path.reverse()
             return path
 
-
     def init_keys(self, conn):
         '''Apply Diffie-Hellmann to initialize key with all the routed relays'''
         secretnumber=random.randint(1,p)
@@ -67,7 +66,6 @@ class Sender(object):
     def send(self, encrypted_msg, ip_dest):
         '''Send encrypted message to the destination'''
         pass
-
 
     def generate_and_send_new_key(self, ip_adress, port):
         '''1) Generate a Key object in which will be stored a unique Key ID and a public key.
