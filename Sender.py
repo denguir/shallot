@@ -91,10 +91,18 @@ class Sender(object):
 
 
 if __name__ == '__main__':
+    topo = Topology()
+    topo.build('config/topology.ini')
+
+    # sender = Sender('172.16.1.1')
+    # visted, path = sender.find_route(topo)
+    # print(visted)
+    # print(path)
+
 
     '''TEST Key init between Alice-Bob and Alice-relay1
     Note: IP and Port are not yet implemented'''
-    Alice = Sender('')
+    Alice = Sender('172.16.1.1')
     Bob = Receiver('')
     relay1 = Relay('','')
 
@@ -109,8 +117,6 @@ if __name__ == '__main__':
     print("Alice-Bob key:")
     print(Alice.keys[1].get_shared_key())
     print(Bob.keys[1].get_shared_key())
-<<<<<<< HEAD
-=======
 
     print("\n")
     print("Alice-relay1 key:")
@@ -119,5 +125,3 @@ if __name__ == '__main__':
 
     path = Alice.shortest_path(topo, '172.16.3.2')
     print(path)
-    
->>>>>>> 29ec36b804f620d314843b8c875c62481ae73a34
