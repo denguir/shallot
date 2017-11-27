@@ -94,10 +94,11 @@ if __name__ == '__main__':
     # print(path)
 
 
-    '''TEST Key init between Alice-Bob and Alice-relay1'''
+    '''TEST Key init between Alice-Bob and Alice-relay1
+    Note: IP and Port are not yet implemented'''
     Alice = Sender('172.16.1.1')
-    Bob = Receiver('172.16.1.1')
-    relay1 = Relay('172.16.1.1','8080')
+    Bob = Receiver('172.16.2.1')
+    relay1 = Relay('172.16.3.1','8080')
 
     Alice.generate_and_send_new_key('172.16.1.1','8080')
     Bob.generate_key_from_sender('172.16.1.1','8080',1, Alice.keys[1].get_public_key())
