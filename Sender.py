@@ -89,13 +89,25 @@ class Sender(object):
         new_int = hex_int + 0x200
         return (hex(new_int)[2:])
 
-    def encrypt(self, key_id, msg):
+    def encrypt(self, key_id, message):
         '''Encrypt the message raw using the AES algorithm'''
-        return self.keys[key_id].cipher.encrypt(msg)
+        return self.keys[key_id].cipher.encrypt(message)
 
-    def decrypt(self, key_id, msg):
+    def decrypt(self, key_id, message):
         '''Decrypt the message enc using the AES algorithm'''
-        return self.keys[key_id].cipher.decrypt(msg)
+        return self.keys[key_id].cipher.decrypt(message)
+
+    def built_shallot(self, keysID_order, message):
+        shallot = message
+        for key_ID in keysID_order[::-1]:
+            shallot = self.encrypt(key_ID, shallot)
+        return shallot
+
+    def decrypt_shallot(self, keysID_order, message):
+        shallot = message
+        for key_ID in keysID_order:
+            shallot = self.decrypt(key_ID, shallot)
+        return shallot        
 
 
 if __name__ == '__main__':
@@ -113,6 +125,7 @@ if __name__ == '__main__':
     Bob = Receiver('')
     relay1 = Relay('','')
     relay2 = Relay('','')
+
 
     '''Key negotiation with Bob'''
     Alice.generate_and_send_new_key('','')
@@ -162,6 +175,7 @@ if __name__ == '__main__':
     print('Decrypted: %s' % decrypted_relay1,"\n")
     '''
 
+    '''Encryption of a message 3 times'''
     msg = 'Allah akbar!'
     print('Message to encrypt 3 times: %s' % msg)
     encrypted1 = Alice.encrypt(1,msg) # encrypted with Alice-Bob key
@@ -176,4 +190,14 @@ if __name__ == '__main__':
     decrypted2 = relay1.decrypt(2,decrypted1) # decrypted with Alice-relay1 key
     print('Decrypted 2 time: %s' % decrypted2) 
     decrypted3 = Bob.decrypt(1,decrypted2) # decrypted with Alice-Bob key
-    print('Decrypted 3 times: %s' % decrypted3)
+    print('Decrypted 3 times: %s' % decrypted3,'\n')
+
+
+    '''Shallot building with decryption'''
+    msg2 = 'Ta mere la reine des putes'
+    keysID_order = [3,2,1]
+    shallot = Alice.built_shallot(keysID_order,msg2)
+    print('Encrypted shallot: %s' % shallot)
+    msg2_recover = Alice.decrypt_shallot(keysID_order,shallot)
+    print('Decrypted shallot: %s' % msg2_recover)
+    
