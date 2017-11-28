@@ -20,10 +20,9 @@ class Receiver(object):
     def send_public_key(self, ip_adress, port, key_id, public_key):
         pass
 
-    def encrypt(self, key_id, message):
-        '''Encrypt the message raw using the AES algorithm'''
-        return self.keys[key_id].cipher.encrypt(message)
-
     def decrypt(self, key_id, message):
         '''Decrypt the message enc using the AES algorithm'''
         return self.keys[key_id].cipher.decrypt(message)
+
+    def decrypt_shallot(self, key_id, shallot):
+        return self.decrypt(key_id, shallot)

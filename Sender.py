@@ -97,16 +97,18 @@ class Sender(object):
         '''Decrypt the message enc using the AES algorithm'''
         return self.keys[key_id].cipher.decrypt(message)
 
-    def built_shallot(self, keysID_order, message):
+    def build_shallot(self, keysID_order, message):
+        '''Build the shallot based on the order of the keys ID'''
         shallot = message
-        for key_ID in keysID_order[::-1]:
-            shallot = self.encrypt(key_ID, shallot)
+        for key_id in keysID_order[::-1]:
+            shallot = self.encrypt(key_id, shallot)
         return shallot
 
     def decrypt_shallot(self, keysID_order, message):
+        '''The Sender can decrypt the entire shallot by using this function'''
         shallot = message
-        for key_ID in keysID_order:
-            shallot = self.decrypt(key_ID, shallot)
+        for key_id in keysID_order:
+            shallot = self.decrypt(key_id, shallot)
         return shallot        
 
 
@@ -196,8 +198,7 @@ if __name__ == '__main__':
     '''Shallot building with decryption'''
     msg2 = 'Ta mere la reine des putes'
     keysID_order = [3,2,1]
-    shallot = Alice.built_shallot(keysID_order,msg2)
+    shallot = Alice.build_shallot(keysID_order,msg2)
     print('Encrypted shallot: %s' % shallot)
     msg2_recover = Alice.decrypt_shallot(keysID_order,shallot)
     print('Decrypted shallot: %s' % msg2_recover)
-    
