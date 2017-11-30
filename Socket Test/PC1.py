@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 
+# Example found here: https://wiki.python.org/moin/TcpCommunication
+
 '''Run PC1 in one terminal'''
 
 import socket

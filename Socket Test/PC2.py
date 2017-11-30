@@ -1,4 +1,6 @@
 #!/usr/bin/env python
+
+# Example found here: https://wiki.python.org/moin/TcpCommunication
  
 '''Run PC2 in one terminal'''
 
