@@ -4,14 +4,13 @@ import socket
 from Topology import Topology
 from Relay import Relay
 from Receiver import Receiver
+from Host import Host
 from Key import Key
 
-class Sender(object):
+class Sender(Host):
     """docstring for Sender."""
     def __init__(self, ip_addr, port):
-        super(Sender, self).__init__()
-        self.ip_addr = ip_addr
-        self.port = port
+        super(Sender, self).__init__(ip_addr, port)
         self.route = []
         self.p = 2**1024
         self.g = 2
@@ -118,14 +117,9 @@ if __name__ == '__main__':
     topo = Topology()
     topo.build('config/topology.ini')
 
-    # sender = Sender('172.16.1.1')
-    # visted, path = sender.find_route(topo)
-    # print(visted)
-    # print(path)
-
     '''TEST Key init between Alice-Bob and Alice-relay1
     Note: IP and Port are not yet implemented'''
-    Alice = Sender('172.16.1.1')
+    Alice = Sender('172.16.1.1', 4000)
     Bob = Receiver('')
     relay1 = Relay('','')
     relay2 = Relay('','')
@@ -162,12 +156,13 @@ if __name__ == '__main__':
     print(relay2.keys[3].get_shared_key())
     print('\n')
 
-    '''
+
     print("\n")
     print("shortest path:")
-    path = Alice.shortest_path(topo, '172.16.3.2')
+    path = Alice.shortest_path(topo, '172.16.4.2')
     print(path, "\n")
 
+"""
     encrypted_Bob = Alice.encrypt(1,'Hello Bob')
     decrypted_Bob = Bob.decrypt(1,encrypted_Bob)
     print('Encrypted: %s' % encrypted_Bob)
@@ -177,7 +172,7 @@ if __name__ == '__main__':
     decrypted_relay1 = relay1.decrypt(2,encrypted_relay1)
     print('Encrypted: %s' % encrypted_relay1)
     print('Decrypted: %s' % decrypted_relay1,"\n")
-    '''
+
 
     '''Encryption of a message 3 times'''
     msg = 'Allah akbar!'
@@ -204,3 +199,4 @@ if __name__ == '__main__':
     print('Encrypted shallot: %s' % shallot)
     msg2_recover = Alice.decrypt_shallot(keysID_order,shallot)
     print('Decrypted shallot: %s' % msg2_recover)
+"""

@@ -1,6 +1,6 @@
 from Key import Key
 
-class Receiver(object):
+class Receiver(Host):
     """docstring for Receiver."""
     def __init__(self, ip_addr):
         super(Receiver, self).__init__()
