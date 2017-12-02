@@ -12,8 +12,6 @@ class Sender(Host):
     def __init__(self, ip_addr, port):
         super(Sender, self).__init__(ip_addr, port)
         self.route = []
-        self.p = 2**1024
-        self.g = 2
         self.keys = {}
 
     def dijkstra(self, topology, source):
@@ -52,17 +50,6 @@ class Sender(Host):
                 node = previous_path[node]
             path.reverse()
             return path
-
-    def init_keys(self, conn):
-        '''Apply Diffie-Hellmann to initialize key with all the routed relays'''
-        secretnumber=random.randint(1,p)
-        init_msg=(g**secretnumber)%p
-        conn.send(init_msg)
-        secretkey=conn.rcv(buffer_size)
-
-    def send(self, encrypted_msg, ip_dest):
-        '''Send encrypted message to the destination'''
-        pass
 
     def generate_and_send_new_key(self, ip_adress, port):
         '''1) Generate a Key object in which will be stored a unique Key ID and a public key.
@@ -162,7 +149,7 @@ if __name__ == '__main__':
     path = Alice.shortest_path(topo, '172.16.4.2')
     print(path, "\n")
 
-"""
+
     encrypted_Bob = Alice.encrypt(1,'Hello Bob')
     decrypted_Bob = Bob.decrypt(1,encrypted_Bob)
     print('Encrypted: %s' % encrypted_Bob)
@@ -199,4 +186,3 @@ if __name__ == '__main__':
     print('Encrypted shallot: %s' % shallot)
     msg2_recover = Alice.decrypt_shallot(keysID_order,shallot)
     print('Decrypted shallot: %s' % msg2_recover)
-"""

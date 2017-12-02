@@ -2,9 +2,8 @@ from Key import Key
 
 class Receiver(Host):
     """docstring for Receiver."""
-    def __init__(self, ip_addr):
-        super(Receiver, self).__init__()
-        self.ip_addr = ip_addr
+    def __init__(self, ip_addr, port):
+        super(Receiver, self).__init__(ip_addr, port)
         self.keys = {}
 
     def generate_key_from_sender(self, ip_sender, port_sender, key_id, public_key_sender):

@@ -35,17 +35,17 @@ class Host(object):
     def stop(self):
         self.alive = False
 
-    def connect(self, server):
+    def connect(self, ip, port):
         s=socket.socket(socket.AF_INET,socket.SOCK_STREAM)
         try:
-            s.connect((server.ip_addr, server.port))
+            s.connect((ip, port))
         except socket.error:
             print('Connection failed')
         return s
 
     @threaded
-    def send(self, msg, destination):
-        s = self.connect(destination)
+    def send(self, msg, ip, port):
+        s = self.connect(ip,port)
         s.send(msg.encode('utf-8'))
 
 
@@ -54,7 +54,7 @@ if __name__ == '__main__':
     R = Host('127.0.0.2', 5000)
     A.listen()
     R.listen()
-    A.send('coucou', R)
-    R.send('ok', A)
+    A.send('coucou', '127.0.0.2', 5000)
+    R.send('ok', '127.0.0.1', 5000)
     print(A.buffer.get())
     print(R.buffer.get())
