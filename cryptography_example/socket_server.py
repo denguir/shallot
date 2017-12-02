@@ -84,7 +84,6 @@ class Listener(Thread):
 		self.conn.close()
 		print('Client %s disconnected from port %s' % (self.addr[0], self.addr[1]))
 
-
 if __name__ == '__main__':
 	s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 	try:
