@@ -1,5 +1,6 @@
 import random
 import math
+import socket
 from Topology import Topology
 from Relay import Relay
 from Receiver import Receiver
@@ -7,9 +8,10 @@ from Key import Key
 
 class Sender(object):
     """docstring for Sender."""
-    def __init__(self, ip_addr):
+    def __init__(self, ip_addr, port):
         super(Sender, self).__init__()
         self.ip_addr = ip_addr
+        self.port = port
         self.route = []
         self.p = 2**1024
         self.g = 2
@@ -64,10 +66,25 @@ class Sender(object):
         '''Build the shallot according to the keys generated in init_keys'''
         pass
 
-    def send(self, encrypted_msg, ip_dest):
+    def send(self, encrypted_msg, network, relay):
         '''Send encrypted message to the destination'''
-        pass
+        path = self.shortest_path(network, relay.ip_addr)
+        if path is not None:
+            try:
+                s = self.connect(relay.ip_addr, relay.port)
+                s.send(encrypted_msg)
+            except socket.error:
+                print('Failed while sending message to %s' %(relay.ip_addr))
 
+
+    def connect(self, host, port):
+        try:
+            s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            s.connect((host, port))
+        except socket.error:
+            print('Connection failed')
+        print('Connection success with %s on port %s' % (self.host,self.port))
+        return s
 
     def generate_and_send_new_key(self, ip_adress, port):
         '''1) Generate a Key object in which will be stored a unique Key ID and a public key.
