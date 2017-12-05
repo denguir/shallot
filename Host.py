@@ -1,3 +1,4 @@
+import configparser
 import threading
 import queue
 import socket
@@ -10,12 +11,19 @@ def threaded(func):
 
 class Host(object):
     """docstring for Server."""
-    def __init__(self, ip_addr, port):
+    def __init__(self, config_file):
+        # TODO: host must look at host.ini
         super(Host, self).__init__()
-        self.ip_addr = ip_addr
-        self.port = port
+        self.ip_addr, self.port = self.init_address(config_file)
         self.alive = True
         self.buffer = queue.Queue()
+
+    def init_address(self, config_file):
+        config = configparser.ConfigParser()
+        config.read(config_file)
+        ip = config['host']['ip']
+        port = config['host']['port']
+        return ip, int(port)
 
     @threaded
     def listen(self):
@@ -50,11 +58,11 @@ class Host(object):
 
 
 if __name__ == '__main__':
-    A = Host('127.0.0.1', 5000)
-    R = Host('127.0.0.2', 5000)
-    A.listen()
-    R.listen()
-    A.send('coucou', '127.0.0.2', 5000)
-    R.send('ok', '127.0.0.1', 5000)
-    print(A.buffer.get())
-    print(R.buffer.get())
+    R1 = Host('config/host_R1.ini')
+    R2 = Host('config/host_R2.ini')
+    R1.listen()
+    R2.listen()
+    R1.send('Hello', '127.0.2.1', 9005)
+    R2.send('Hello back', '127.0.1.1', 9001)
+    print(R1.buffer.get())
+    print(R2.buffer.get())

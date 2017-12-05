@@ -3,8 +3,8 @@ from Host import Host
 
 class Relay(Host):
     """docstring for Relay."""
-    def __init__(self, ip_addr, port):
-        super(Relay, self).__init__(ip_addr, port)
+    def __init__(self, config_file):
+        super(Relay, self).__init__(config_file)
         self.keys = {}
 
     def generate_key_from_sender(self, sender, key_id, public_key_sender):

@@ -1,3 +1,4 @@
+import configparser
 import random
 
 class Topology(object):
@@ -9,26 +10,16 @@ class Topology(object):
         self.costs = dict()
 
     def build(self, file):
-        i_relay, i_topo = 0, 0
-        with open(file, 'r') as f:
-            lines = f.readlines()
+        config = configparser.ConfigParser()
+        config.read(file)
+        for relay in config['relays']:
+            ip, port = config['relays'][relay].split(' ')
+            self.nodes.add(ip)
 
-        for i, line in enumerate(lines):
-            line = line.join(line.splitlines())
-            if line == '[relays]':
-                i_rel = i
-            elif line == '[topology]':
-                i_topo = i
-
-        for i, line in enumerate(lines):
-            line = line.join(line.splitlines())
-            if i > i_rel and i < i_topo and line:
-                ip, port = line.split(' ')
-                self.nodes.add(ip)
-            elif i > i_topo and line:
-                ips = line.split(' ')
-                self.edges[ips[0]] = ips[1:]
-
+        for link in config['topology']:
+            ips = config['topology'][link].split(' ')
+            self.edges[ips[0]] = ips[1:]
+            
         self.random_cost()
 
     def random_cost(self):
