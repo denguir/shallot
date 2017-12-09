@@ -20,7 +20,6 @@ if __name__ == '__main__':
     print(sp)
 
     Alice.initialyze_keys(sp)
-    # print(sp)
 
     '''Key negotiation with Bob'''
     # Bob_KeyID = Alice.IP_KeyID[Bob.ip_addr]
