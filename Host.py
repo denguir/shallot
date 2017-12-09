@@ -35,7 +35,13 @@ class Host(object):
         while self.alive:
             conn, addr = s.accept()
             data = conn.recv(BUFFER_SIZE)
-            self.buffer.put(data)
+            data_with_origin = {addr:data}
+            self.buffer.put(data_with_origin)
+            if not self.buffer.empty():
+                msg = self.buffer.get()[addr]
+                key_id = msg[0:32]
+                public_key = msg[32:]
+
             if not data: break
             print("received data:", data)
             conn.close()
@@ -55,6 +61,14 @@ class Host(object):
     def send(self, msg, ip, port):
         s = self.connect(ip,port)
         s.send(msg.encode('utf-8'))
+
+    @threaded
+    def key_reply(self):
+        self.buffer.get()[]
+        msg = self.buffer.get()
+        key_id = msg[0:32]
+        public_key = msg[32:]
+
 
 
 if __name__ == '__main__':
