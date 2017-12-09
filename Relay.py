@@ -26,7 +26,7 @@ class Relay(Host):
         '''Decrypt the message enc using the AES algorithm'''
         return self.keys[key_id].cipher.decrypt(shallot)
 
-    def on_data(self, data, ip_origin, port_origin):
+    def on_data(self, ip_origin, port_origin):
         """
         if data_type is KEY_INIT : apply generate_key_from_sender
         if data_type is KEY_REPLY : reply
