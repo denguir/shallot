@@ -31,7 +31,7 @@ class Host(object):
         s=socket.socket(socket.AF_INET,socket.SOCK_STREAM)
         s.bind((self.ip_addr, self.port))
         s.listen(5) # length of the network
-        BUFFER_SIZE = 1024
+        BUFFER_SIZE = 2048
 
         while self.alive:
             conn, addr = s.accept()
@@ -39,7 +39,6 @@ class Host(object):
             if data:
                 self.buffer.put(data)
                 self.on_data(addr[0], addr[1])
-
 
             else: break
             print("received data:", data)
