@@ -6,6 +6,7 @@ class Receiver(Host):
     def __init__(self, config_file):
         super(Receiver, self).__init__(config_file)
         self.KeyID_key = {}
+        self.listen()
 
     def generate_key_from_sender(self, ip_sender, port_sender, key_id, public_key_sender):
         '''1) Generate a public key with the key ID specified by the sender
@@ -23,3 +24,7 @@ class Receiver(Host):
     def decrypt_shallot(self, key_id, shallot):
         '''Decrypt the message enc using the AES algorithm'''
         return self.keys[key_id].cipher.decrypt(shallot)
+
+    def key_reply(self):
+        self.buffer.get()
+        

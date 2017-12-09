@@ -14,6 +14,7 @@ class Sender(Host):
         self.route = []
         self.KeyID_key = {}
         self.IP_KeyID = {}
+        self.listen()
 
     def dijkstra(self, topology, source):
         '''
@@ -54,7 +55,7 @@ class Sender(Host):
 
     def initialyze_keys(self,path):
         for i in range(1,len(path)):
-            self.generate_and_send_new_key(path[i], 0)
+            self.generate_and_send_new_key(path[i],9000)
 
     def generate_and_send_new_key(self, ip_address, port):
         '''1) Generate a Key object in which will be stored a unique Key ID and a public key.
@@ -71,9 +72,7 @@ class Sender(Host):
         return self.dec_to_32bits(key_id)
 
     def send_public_key(self, ip_address, port, key_id, public_key):
-        msg = key_id + str(public_key)
-        print(type(msg))
-        self.send(msg, ip_address, port)
+        self.send(key_id+str(public_key), ip_address,port)
 
     def generate_key_from_replier(self, key_id, public_key_replier):
         '''Generate the shared key between the sender and the replier.'''
@@ -100,7 +99,7 @@ class Sender(Host):
             binary_IP_next = self.ip2bin(IP_next)
             print(key_ID,binary_IP_next+shallot)
             shallot = self.encrypt(key_ID,binary_IP_next+shallot)
-            print(shallot)
+
             shallot = key_ID + shallot
             print(shallot)
         return shallot
@@ -132,25 +131,26 @@ if __name__ == '__main__':
     relay1 = Relay('config/host_R2.ini')
     relay2 = Relay('config/host_R3.ini')
 
-    sp = Alice.shortest_path(topo, '172.16.4.2')
-
-    Alice.initialyze_keys(sp)
+    sp = Alice.shortest_path(topo, '127.16.4.2')
     print(sp)
 
+    Alice.initialyze_keys(sp)
+    # print(sp)
+
     '''Key negotiation with Bob'''
-    Bob_KeyID = Alice.IP_KeyID[Bob.ip_addr]
-    relay1_KeyID = Alice.IP_KeyID[relay1.ip_addr]
-    relay2_KeyID = Alice.IP_KeyID[relay2.ip_addr]
-    Bob.generate_key_from_sender('','',Bob_KeyID, Alice.KeyID_key[Bob_KeyID].get_public_key())
-    Alice.generate_key_from_replier(Bob_KeyID,Bob.KeyID_key[Alice.IP_KeyID[Bob.ip_addr]].get_public_key())
+    # Bob_KeyID = Alice.IP_KeyID[Bob.ip_addr]
+    # relay1_KeyID = Alice.IP_KeyID[relay1.ip_addr]
+    # relay2_KeyID = Alice.IP_KeyID[relay2.ip_addr]
+    # Bob.generate_key_from_sender('','',Bob_KeyID, Alice.KeyID_key[Bob_KeyID].get_public_key())
+    # Alice.generate_key_from_replier(Bob_KeyID,Bob.KeyID_key[Alice.IP_KeyID[Bob.ip_addr]].get_public_key())
 
-    '''Key negotiation with relay1'''
-    relay1.generate_key_from_sender('','',relay1_KeyID, Alice.KeyID_key[relay1_KeyID].get_public_key())
-    Alice.generate_key_from_replier(relay1_KeyID,relay1.KeyID_key[relay1_KeyID].get_public_key())
+    # '''Key negotiation with relay1'''
+    # relay1.generate_key_from_sender('','',relay1_KeyID, Alice.KeyID_key[relay1_KeyID].get_public_key())
+    # Alice.generate_key_from_replier(relay1_KeyID,relay1.KeyID_key[relay1_KeyID].get_public_key())
 
-    '''Key negotiation with relay2'''
-    relay2.generate_key_from_sender('','',relay2_KeyID, Alice.KeyID_key[relay2_KeyID].get_public_key())
-    Alice.generate_key_from_replier(relay2_KeyID,relay2.KeyID_key[relay2_KeyID].get_public_key())
+    # '''Key negotiation with relay2'''
+    # relay2.generate_key_from_sender('','',relay2_KeyID, Alice.KeyID_key[relay2_KeyID].get_public_key())
+    # Alice.generate_key_from_replier(relay2_KeyID,relay2.KeyID_key[relay2_KeyID].get_public_key())
 
 
     # print("Alice-Bob key:")
@@ -168,4 +168,4 @@ if __name__ == '__main__':
     # print(relay2.KeyID_key[Alice.IP_KeyID[relay2.ip_addr]].get_shared_key())
     # print('\n')
 
-    Alice.build_shallot(sp,'caca')
+    #Alice.build_shallot(sp,'caca')
