@@ -103,11 +103,12 @@ class Sender(Host):
 
             IP_next = path[i-1]
             binary_IP_next = self.ip2bin(IP_next)
+            print(key_ID,binary_IP_next+shallot)
             shallot = self.encrypt(key_ID,binary_IP_next+shallot)
 
             shallot = key_ID + shallot
         return shallot
-
+    
     def decrypt_shallot(self, keysID_order, message):
         '''The Sender can decrypt the entire shallot by using this function'''
         shallot = message

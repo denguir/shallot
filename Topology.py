@@ -19,7 +19,6 @@ class Topology(object):
         for link in config['topology']:
             ips = config['topology'][link].split(' ')
             self.edges[ips[0]] = ips[1:]
-            
         self.random_cost()
 
     def random_cost(self):
@@ -30,7 +29,6 @@ class Topology(object):
                     self.costs[edge,self.edges[edge][i]]=random.randint(1,16)
                 else:
                     self.costs[edge,self.edges[edge][i]] = self.costs[self.edges[edge][i],edge]
-
 
     def add_node(self, value):
         self.nodes.add(value)

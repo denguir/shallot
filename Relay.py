@@ -29,6 +29,21 @@ class Relay(Host):
         header = version + msg_type + msg_empty_space + msg_length
         self.send(header + body, ip_address,port)
 
+    def send_public_key(self, ip_address, port, key_id, public_key):
+        self.send(msg, ip_address, port)
+
     def decrypt_shallot(self, key_id, shallot):
         '''Decrypt the message enc using the AES algorithm'''
         return self.keys[key_id].cipher.decrypt(shallot)
+
+    def on_data(self, ip_origin, port_origin):
+        """
+        if data_type is KEY_INIT : apply generate_key_from_sender
+        if data_type is KEY_REPLY : reply
+        example:                if not self.buffer.empty():
+                                    msg = self.buffer.get()
+                                    key_id = msg[0:32]
+                                    public_key = msg[32:]
+        if data_type is MESSAGE_RELAY : send to next hop
+        if data_type is ERROR :
+        """
