@@ -43,11 +43,3 @@ class Topology(object):
         else:
             print("Adding edge failed:")
             print("<from_node> must be different from <to_node>")
-
-
-if __name__ == '__main__':
-    topo = Topology()
-    topo.build('config/topology.ini')
-    print(topo.nodes)
-    print(topo.edges)
-    print(topo.costs)
