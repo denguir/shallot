@@ -54,7 +54,7 @@ class Sender(Host):
 
     def initialyze_keys(self,path):
         for i in range(1,len(path)):
-            self.generate_and_send_new_key(path[i],'')
+            self.generate_and_send_new_key(path[i], 0)
 
     def generate_and_send_new_key(self, ip_address, port):
         '''1) Generate a Key object in which will be stored a unique Key ID and a public key.
@@ -68,10 +68,12 @@ class Sender(Host):
     def generate_key_id(self):
         '''Generate the unique key ID.'''
         key_id = len(self.KeyID_key)+1
-        return key_id
+        return self.dec_to_32bits(key_id)
 
     def send_public_key(self, ip_address, port, key_id, public_key):
-        pass
+        msg = key_id + str(public_key)
+        print(type(msg))
+        self.send(msg, ip_address, port)
 
     def generate_key_from_replier(self, key_id, public_key_replier):
         '''Generate the shared key between the sender and the replier.'''
@@ -96,10 +98,11 @@ class Sender(Host):
 
             IP_next = path[i-1]
             binary_IP_next = self.ip2bin(IP_next)
+            print(key_ID,binary_IP_next+shallot)
             shallot = self.encrypt(key_ID,binary_IP_next+shallot)
-
-            keyID_in_bits = self.dec_to_32bits(key_ID)
-            shallot = keyID_in_bits + shallot
+            print(shallot)
+            shallot = key_ID + shallot
+            print(shallot)
         return shallot
 
     def decrypt_shallot(self, keysID_order, message):
@@ -131,7 +134,6 @@ if __name__ == '__main__':
 
     sp = Alice.shortest_path(topo, '172.16.4.2')
 
-
     Alice.initialyze_keys(sp)
     print(sp)
 
@@ -149,7 +151,7 @@ if __name__ == '__main__':
     '''Key negotiation with relay2'''
     relay2.generate_key_from_sender('','',relay2_KeyID, Alice.KeyID_key[relay2_KeyID].get_public_key())
     Alice.generate_key_from_replier(relay2_KeyID,relay2.KeyID_key[relay2_KeyID].get_public_key())
-    
+
 
     # print("Alice-Bob key:")
     # print(Alice.KeyID_key[Alice.IP_KeyID[Bob.ip_addr]].get_shared_key())
@@ -167,4 +169,3 @@ if __name__ == '__main__':
     # print('\n')
 
     Alice.build_shallot(sp,'caca')
-    
