@@ -1,3 +1,4 @@
+from abc import ABCMeta, abstractmethod
 import configparser
 import threading
 import queue
@@ -11,6 +12,7 @@ def threaded(func):
 
 class Host(object):
     """docstring for Server."""
+    __metaclass__  = ABCMeta
     def __init__(self, config_file):
         super(Host, self).__init__()
         self.ip_addr, self.port = self.init_address(config_file)
@@ -34,14 +36,12 @@ class Host(object):
         while self.alive:
             conn, addr = s.accept()
             data = conn.recv(BUFFER_SIZE)
-            data_with_origin = {addr:data}
-            self.buffer.put(data_with_origin)
-            if not self.buffer.empty():
-                msg = self.buffer.get()[addr]
-                key_id = msg[0:32]
-                public_key = msg[32:]
+            if data:
+                self.buffer.put(data)
+                self.on_data(addr[0], addr[1])
 
-            if not data: break
+
+            else: break
             print("received data:", data)
             conn.close()
 
@@ -61,13 +61,12 @@ class Host(object):
         s = self.connect(ip,port)
         s.send(msg.encode('utf-8'))
 
-    # @threaded
-    # def key_reply(self):
-    #     self.buffer.get()[]
-    #     msg = self.buffer.get()
-    #     key_id = msg[0:32]
-    #     public_key = msg[32:]
-
+    @abstractmethod
+    @threaded
+    def on_data(self, ip_origin, port_origin):
+        """Handle the data on the basis of the type of msg
+        ip_origin and port_origin refer to the address of the
+        sender"""
 
 
 if __name__ == '__main__':
