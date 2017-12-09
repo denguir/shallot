@@ -19,7 +19,6 @@ class Topology(object):
         for link in config['topology']:
             ips = config['topology'][link].split(' ')
             self.edges[ips[0]] = ips[1:]
-
         self.random_cost()
 
     def random_cost(self):

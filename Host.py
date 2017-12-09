@@ -12,7 +12,6 @@ def threaded(func):
 class Host(object):
     """docstring for Server."""
     def __init__(self, config_file):
-        # TODO: host must look at host.ini
         super(Host, self).__init__()
         self.ip_addr, self.port = self.init_address(config_file)
         self.alive = True
