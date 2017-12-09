@@ -15,12 +15,22 @@ class Relay(Host):
 
         new_key = Key(key_id)
         self.KeyID_key.update({key_id:new_key})
-        self.send_public_key(ip_sender, port_sender, new_key.get_key_id(), new_key.get_public_key())
+        self.send_key_reply(ip_sender, port_sender, new_key.get_key_id(), new_key.get_public_key())
         new_key.generate_shared_key(public_key_sender)
+
+    def send_key_reply(self, ip_address, port, key_id, public_key):
+        version = '0001'
+        msg_type = '0001'
+        msg_empty_space = '00000000'
+
+        body = key_id + '{:01024b}'.format(public_key)
+
+        msg_length = '{:016b}'.format(len(body))
+        header = version + msg_type + msg_empty_space + msg_length
+        self.send(header + body, ip_address,port)
 
     def send_public_key(self, ip_address, port, key_id, public_key):
         self.send(msg, ip_address, port)
-
 
     def decrypt_shallot(self, key_id, shallot):
         '''Decrypt the message enc using the AES algorithm'''

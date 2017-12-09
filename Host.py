@@ -31,7 +31,7 @@ class Host(object):
         s=socket.socket(socket.AF_INET,socket.SOCK_STREAM)
         s.bind((self.ip_addr, self.port))
         s.listen(5) # length of the network
-        BUFFER_SIZE = 2048
+        BUFFER_SIZE = 2148
 
         while self.alive:
             conn, addr = s.accept()
@@ -60,20 +60,16 @@ class Host(object):
         s = self.connect(ip,port)
         s.send(msg.encode('utf-8'))
 
+    # @threaded
+    # def key_reply(self):
+    #     self.buffer.get()[]
+    #     msg = self.buffer.get()
+    #     key_id = msg[0:32]
+    #     public_key = msg[32:]
+
     @abstractmethod
     @threaded
     def on_data(self, ip_origin, port_origin):
         """Handle the data on the basis of the type of msg
         ip_origin and port_origin refer to the address of the
         sender"""
-
-
-if __name__ == '__main__':
-    R1 = Host('config/host_R1.ini')
-    R2 = Host('config/host_R2.ini')
-    R1.listen()
-    R2.listen()
-    R1.send('Hello', '127.0.2.1', 9005)
-    R2.send('Hello back', '127.0.1.1', 9001)
-    print(R1.buffer.get())
-    print(R2.buffer.get())

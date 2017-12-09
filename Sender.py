@@ -11,6 +11,8 @@ class Sender(Host):
         self.route = []
         self.KeyID_key = {}
         self.IP_KeyID = {}
+        self.g = 2
+        self.p = 179769313486231590770839156793787453197860296048756011706444423684197180216158519368947833795864925541502180565485980503646440548199239100050792877003355816639229553136239076508735759914822574862575007425302077447712589550957937778424442426617334727629299387668709205606050270810842907692932019128194467627007
         self.listen()
 
     def dijkstra(self, topology, source):
@@ -61,15 +63,22 @@ class Sender(Host):
         new_key = Key(key_id)
         self.KeyID_key.update({key_id:new_key})
         self.IP_KeyID.update({ip_address:key_id})
-        self.send_public_key(ip_address, port, new_key.get_key_id(), new_key.get_public_key())
+        self.send_key_init(ip_address, port, new_key.get_key_id(), new_key.get_public_key())
 
     def generate_key_id(self):
         '''Generate the unique key ID.'''
         key_id = len(self.KeyID_key)+1
         return self.dec_to_32bits(key_id)
 
-    def send_public_key(self, ip_address, port, key_id, public_key):
-        self.send(key_id+str(public_key), ip_address,port)
+    def send_key_init(self, ip_address, port, key_id, public_key):
+        version = '0001'
+        msg_type = '0000'
+        msg_empty_space = '00000000'
+
+        body = key_id + '{:04b}'.format(self.g) + '{:01024b}'.format(self.p) + '{:01024b}'.format(public_key)
+        msg_length = '{:016b}'.format(len(body))
+        header = version + msg_type + msg_empty_space + msg_length
+        self.send(header + body, ip_address,port)
 
     def generate_key_from_replier(self, key_id, public_key_replier):
         '''Generate the shared key between the sender and the replier.'''
@@ -115,3 +124,6 @@ class Sender(Host):
 
     def dec_to_32bits(self, integer):
         return '{:032b}'.format(integer)
+
+    def dec_to_1024bits(self, integer):
+        return '{:01024b}'.format(integer)
