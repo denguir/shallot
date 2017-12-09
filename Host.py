@@ -74,15 +74,3 @@ class Host(object):
         """Handle the data on the basis of the type of msg
         ip_origin and port_origin refer to the address of the
         sender"""
-
-
-if __name__ == '__main__':
-    R1 = Host('config/host_R1.ini')
-    R2 = Host('config/host_R2.ini')
-    R1.listen()
-    R2.listen()
-    R1.send('Hello', '127.0.2.1', 9005)
-    R2.send('Hello back', '127.0.1.1', 9001)
-    print(R1.buffer.get())
-    print(R2.buffer.get())
->>>>>>> 55925c111809a8a59696476d5daebccde15448bb
