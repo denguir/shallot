@@ -24,4 +24,3 @@ class Relay(Host):
     def decrypt_shallot(self, key_id, shallot):
         '''Decrypt the message enc using the AES algorithm'''
         return self.keys[key_id].cipher.decrypt(shallot)
-

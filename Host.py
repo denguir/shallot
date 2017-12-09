@@ -61,12 +61,12 @@ class Host(object):
         s = self.connect(ip,port)
         s.send(msg.encode('utf-8'))
 
-    @threaded
-    def key_reply(self):
-        self.buffer.get()[]
-        msg = self.buffer.get()
-        key_id = msg[0:32]
-        public_key = msg[32:]
+    # @threaded
+    # def key_reply(self):
+    #     self.buffer.get()[]
+    #     msg = self.buffer.get()
+    #     key_id = msg[0:32]
+    #     public_key = msg[32:]
 
 
 

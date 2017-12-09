@@ -27,4 +27,3 @@ class Receiver(Host):
 
     def key_reply(self):
         self.buffer.get()
-        
