@@ -21,7 +21,9 @@ class Host(object):
         self.socket_in = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
         self.socket_in.setblocking(0)
         self.socket_in.bind((self.ip_addr, self.port_in))
-        self.listen(3)
+        self.socket_in.listen(3)
+        self.socket_out = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
+        self.socket_out.bind((self.ip_addr, self.port_out))
         self.inputs = [self.socket_in]
         self.outputs = []
         self.alive = True
@@ -79,19 +81,22 @@ class Host(object):
         self.alive = False
 
     def connect(self, ip, port):
-        s=socket.socket(socket.AF_INET,socket.SOCK_STREAM)
-        s.bind((self.ip_addr, self.port_out))
-        print("connect:", self.ip_addr, self.port_out)
-        try:
-            s.connect((ip, port))
-        except socket.error:
-            print('Connection failed')
-        return s
+        readable, writable, exceptional = select.select(self.inputs,
+        self.outputs, self.inputs)
+        print(writable)
+        for s in writable:
+            if s.getsockname()[0] == ip:
+                self.socket_out.connect((ip, port))
+                print("connect:", self.ip_addr, self.port_out)
+                return s
 
     @threaded
     def send(self, msg, ip, port):
         s = self.connect(ip,port)
-        s.send(msg.encode('utf-8'))
+        if s is None:
+            pass
+        else:
+            s.send(msg.encode('utf-8'))
 
     @abstractmethod
     @threaded
