@@ -7,6 +7,7 @@ class Relay(Host):
         super(Relay, self).__init__(config_file)
         self.KeyID_key = {}
         self.listen()
+        self.listen_for_reply()
 
     def generate_key_from_sender(self, ip_sender, port_sender, key_id, public_key_sender):
         '''1) Generate a public key with the key ID specified by the sender

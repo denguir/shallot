@@ -21,5 +21,5 @@ s.connect((IP_SERVER, PORT_SERVER))
 s.send(MESSAGE)
 data = s.recv(BUFFER_SIZE)
 s.close()
- 
+
 print("received data:", data)

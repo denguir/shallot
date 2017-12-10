@@ -2,6 +2,7 @@ from abc import ABCMeta, abstractmethod
 import configparser
 import threading
 import queue
+import select
 import socket
 
 def threaded(func):
@@ -15,9 +16,16 @@ class Host(object):
     __metaclass__  = ABCMeta
     def __init__(self, config_file):
         super(Host, self).__init__()
-        self.ip_addr, self.port = self.init_address(config_file)
+        self.ip_addr, self.port_in = self.init_address(config_file)
+        self.port_out = self.port_in + 100
+        self.socket_in = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
+        self.socket_in.setblocking(0)
+        self.socket_in.bind((self.ip_addr, self.port_in))
+        self.listen(3)
+        self.inputs = [self.socket_in]
+        self.outputs = []
         self.alive = True
-        self.buffer = queue.Queue()
+        self.buffer = {}
 
     def init_address(self, config_file):
         config = configparser.ConfigParser()
@@ -28,27 +36,52 @@ class Host(object):
 
     @threaded
     def listen(self):
-        s=socket.socket(socket.AF_INET,socket.SOCK_STREAM)
-        s.bind((self.ip_addr, self.port))
-        s.listen(5) # length of the network
         BUFFER_SIZE = 2148
-
         while self.alive:
-            conn, addr = s.accept()
-            data = conn.recv(BUFFER_SIZE)
-            if data:
-                self.buffer.put(data)
-                self.on_data(addr[0], addr[1])
+            readable, writable, exceptional = select.select(self.inputs,
+            self.outputs, self.inputs)
+            for s in readable:
+                if s is self.socket_in:
+                    conn, addr = s.accept()
+                    print("in:", addr)
+                    conn.setblocking(0)
+                    self.inputs.append(conn)
+                    self.buffer[conn] = queue.Queue()
+                else:
+                    data = s.recv(BUFFER_SIZE)
+                    if data:
+                        self.buffer[s].put(data)
+                        if s not in self.outputs:
+                            self.outputs.append(s)
+                    else:
+                        if s in self.outputs:
+                            self.outputs.remove(s)
+                        self.inputs.remove(s)
+                        s.close()
+                        del self.buffer[s]
 
-            else: break
-            print("received data:", data)
-            conn.close()
+            for s in writable:
+                try:
+                    next_msg = self.buffer[s].get_nowait()
+                except Queue.Empty:
+                    self.outputs.remove(s)
+                else:
+                    s.send(next_msg)
+
+            for s in exceptional:
+                self.inputs.remove(s)
+                if s in self.outputs:
+                    self.outputs.remove(s)
+                s.close()
+                del self.buffer[s]
 
     def stop(self):
         self.alive = False
 
     def connect(self, ip, port):
         s=socket.socket(socket.AF_INET,socket.SOCK_STREAM)
+        s.bind((self.ip_addr, self.port_out))
+        print("connect:", self.ip_addr, self.port_out)
         try:
             s.connect((ip, port))
         except socket.error:
@@ -59,13 +92,6 @@ class Host(object):
     def send(self, msg, ip, port):
         s = self.connect(ip,port)
         s.send(msg.encode('utf-8'))
-
-    # @threaded
-    # def key_reply(self):
-    #     self.buffer.get()[]
-    #     msg = self.buffer.get()
-    #     key_id = msg[0:32]
-    #     public_key = msg[32:]
 
     @abstractmethod
     @threaded

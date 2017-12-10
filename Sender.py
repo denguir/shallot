@@ -13,7 +13,7 @@ class Sender(Host):
         self.IP_KeyID = {}
         self.g = 2
         self.p = 179769313486231590770839156793787453197860296048756011706444423684197180216158519368947833795864925541502180565485980503646440548199239100050792877003355816639229553136239076508735759914822574862575007425302077447712589550957937778424442426617334727629299387668709205606050270810842907692932019128194467627007
-        self.listen()
+        self.listen_for_reply()
 
     def dijkstra(self, topology, source):
         '''
@@ -108,7 +108,7 @@ class Sender(Host):
 
             shallot = key_ID + shallot
         return shallot
-    
+
     def decrypt_shallot(self, keysID_order, message):
         '''The Sender can decrypt the entire shallot by using this function'''
         shallot = message
