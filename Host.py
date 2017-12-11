@@ -18,6 +18,7 @@ class Host(object):
         self.ip_addr, self.port = self.init_address(config_file)
         self.alive = True
         self.buffer = queue.Queue()
+        self.i = 1
 
     def init_address(self, config_file):
         config = configparser.ConfigParser()
@@ -31,7 +32,7 @@ class Host(object):
         s=socket.socket(socket.AF_INET,socket.SOCK_STREAM)
         s.bind((self.ip_addr, self.port))
         s.listen(5) # length of the network
-        BUFFER_SIZE = 2148
+        BUFFER_SIZE = 4096
 
         while self.alive:
             conn, addr = s.accept()
@@ -50,6 +51,9 @@ class Host(object):
 
     def connect(self, ip, port):
         s=socket.socket(socket.AF_INET,socket.SOCK_STREAM)
+        self.i += 1 
+        print(self.ip_addr, self.port+self.i)
+        s.bind((self.ip_addr, self.port+self.i))
         try:
             s.connect((ip, port))
         except socket.error:
@@ -60,6 +64,7 @@ class Host(object):
     def send(self, msg, ip, port):
         s = self.connect(ip,port)
         s.send(msg.encode('utf-8'))
+        s.close()
 
     # @threaded
     # def key_reply(self):
