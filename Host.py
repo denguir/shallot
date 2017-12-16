@@ -17,14 +17,11 @@ class Host(object):
     def __init__(self, config_file):
         super(Host, self).__init__()
         self.ip_addr, self.port_in = self.init_address(config_file)
-        self.port_out = self.port_in + 100
-        self.socket_in = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
-        self.socket_in.setblocking(0)
-        self.socket_in.bind((self.ip_addr, self.port_in))
-        self.socket_in.listen(3)
-        self.socket_out = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
-        self.socket_out.bind((self.ip_addr, self.port_out))
-        self.inputs = [self.socket_in]
+        self.server = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
+        self.server.setblocking(0)
+        self.server.bind((self.ip_addr, self.port_in))
+        self.server.listen(5)
+        self.inputs = [self.server]
         self.outputs = []
         self.alive = True
         self.buffer = {}
@@ -36,14 +33,13 @@ class Host(object):
         port = config['host']['port']
         return ip, int(port)
 
-    @threaded
     def listen(self):
-        BUFFER_SIZE = 2148
+        BUFFER_SIZE = 4096
         while self.alive:
             readable, writable, exceptional = select.select(self.inputs,
             self.outputs, self.inputs)
             for s in readable:
-                if s is self.socket_in:
+                if s is self.server:
                     conn, addr = s.accept()
                     print("in:", addr)
                     conn.setblocking(0)
@@ -90,7 +86,6 @@ class Host(object):
                 print("connect:", self.ip_addr, self.port_out)
                 return s
 
-    @threaded
     def send(self, msg, ip, port):
         s = self.connect(ip,port)
         if s is None:
