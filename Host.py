@@ -17,6 +17,7 @@ class Host(object):
     def __init__(self, config_file):
         super(Host, self).__init__()
         self.ip_addr, self.port_in = self.init_address(config_file)
+        self.port_out = self.port_in + 1000
         self.server = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
         self.server.setblocking(0)
         self.server.bind((self.ip_addr, self.port_in))
@@ -64,7 +65,7 @@ class Host(object):
                 except Queue.Empty:
                     self.outputs.remove(s)
                 else:
-                    s.send(next_msg)
+                    self.on_data(next_msg, s)
 
             for s in exceptional:
                 self.inputs.remove(s)
@@ -77,14 +78,18 @@ class Host(object):
         self.alive = False
 
     def connect(self, ip, port):
-        readable, writable, exceptional = select.select(self.inputs,
-        self.outputs, self.inputs)
-        print(writable)
-        for s in writable:
-            if s.getsockname()[0] == ip:
-                self.socket_out.connect((ip, port))
-                print("connect:", self.ip_addr, self.port_out)
+        for s in self.outputs:
+            if s.getsockname == (ip, port):
                 return s
+
+        new_s = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
+        new_s.bind((self.ip_addr, self.port_out))
+        self.outputs.append(new_s)
+        try:
+            new_s.connect((ip, port))
+        except socket.error:
+            print('Connection failed')
+        return new_s
 
     def send(self, msg, ip, port):
         s = self.connect(ip,port)
@@ -94,8 +99,7 @@ class Host(object):
             s.send(msg.encode('utf-8'))
 
     @abstractmethod
-    @threaded
-    def on_data(self, ip_origin, port_origin):
+    def on_data(self, data, conn):
         """Handle the data on the basis of the type of msg
         ip_origin and port_origin refer to the address of the
         sender"""

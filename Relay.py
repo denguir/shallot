@@ -7,7 +7,7 @@ class Relay(Host):
         super(Relay, self).__init__(config_file)
         self.KeyID_key = {}
         self.listen()
-        
+
     def generate_key_from_sender(self, ip_sender, port_sender, key_id, public_key_sender):
         '''1) Generate a public key with the key ID specified by the sender
            2) Send the public key to the sender
@@ -36,7 +36,9 @@ class Relay(Host):
         '''Decrypt the message enc using the AES algorithm'''
         return self.keys[key_id].cipher.decrypt(shallot)
 
-    def on_data(self, ip_origin, port_origin):
+    def on_data(self, data, conn):
+        conn.send(data) # echo
+
         """
         if data_type is KEY_INIT : apply generate_key_from_sender
         if data_type is KEY_REPLY : reply
