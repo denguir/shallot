@@ -21,9 +21,6 @@ class Relay(Host):
         self.send_key_reply(ip_sender, port_sender, new_key.get_key_id(), new_key.get_public_key())
         new_key.generate_shared_key(public_key_sender)
 
-
-
-
     def send_key_reply(self, ip_address, port, key_id, public_key):
         version = '0001'
         msg_type = '0001'
@@ -56,7 +53,7 @@ class Relay(Host):
         self.send(nxt_msg,ip_next_hop,port)
         return self.keys[key_id].cipher.decrypt(shallot)
 
-    def on_data(self, data,conn):
+    def on_data(self, data, conn):
         """
         if data_type is KEY_INIT : apply generate_key_from_sender
         if data_type is KEY_REPLY : reply
@@ -67,21 +64,26 @@ class Relay(Host):
         if data_type is MESSAGE_RELAY : send to next hop
         if data_type is ERROR :
         """
+        data = str(data)
         ip_origin,port_origin=conn.getsockname()
         version=data[0:4]
         msg_type=data[4:8]
         msg_length=data[16:32]
-        if msg_type=='0000':
-            generate_key_from_sender(ip_origin,port_origin,item)
-        elif msg_type=='0001':
-            self.send("ACK",ip_origin,port_origin)
-        elif msg_type=='0010':
-            self.decrypt(item)
-        elif msg_type=='0011':
+        if msg_type == '0000':
+            # MSG TYPE = KEY_INIT
+            self.generate_key_from_sender(ip_origin,port_origin, data)
+            print('KEY_INIT')
+        elif msg_type == '0001':
+            # MSG TYPE = KEY_REPLY
+            self.send("ACK", ip_origin, port_origin)
+            print('KEY_REPLY')
+        elif msg_type == '0010':
+            # MSG TYPE = MESSAGE_RELAY
+            self.decrypt_shallot(data)
+            print('MESSAGE_RELAY')
+        elif msg_type == '0011':
+            # MSG TYPE = ERROR
             self.send('ACK')
-
-
-
-
-
-
+            print('ERROR')
+        else:
+            print('AUCUN')

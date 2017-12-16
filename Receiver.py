@@ -35,3 +35,38 @@ class Receiver(Host):
 
     def key_reply(self):
         self.buffer.get()
+
+    def on_data(self, data, conn):
+        """
+        if data_type is KEY_INIT : apply generate_key_from_sender
+        if data_type is KEY_REPLY : reply
+        example:                if not self.buffer.empty():
+                                    msg = self.buffer.get()
+                                    key_id = msg[0:32]
+                                    public_key = msg[32:]
+        if data_type is MESSAGE_RELAY : send to next hop
+        if data_type is ERROR :
+        """
+        ip_origin,port_origin=conn.getsockname()
+        data = str(data)
+        version=data[0:4]
+        msg_type=data[4:8]
+        msg_length=data[16:32]
+        if msg_type == '0000':
+            # MSG TYPE = KEY_INIT
+            self.generate_key_from_sender(ip_origin,port_origin, data)
+            print('KEY_INIT')
+        elif msg_type == '0001':
+            # MSG TYPE = KEY_REPLY
+            self.send("ACK", ip_origin, port_origin)
+            print('KEY_REPLY')
+        elif msg_type == '0010':
+            # MSG TYPE = MESSAGE_RELAY
+            self.decrypt_shallot(data)
+            print('MESSAGE_RELAY')
+        elif msg_type == '0011':
+            # MSG TYPE = ERROR
+            self.send('ACK')
+            print('ERROR')
+        else:
+            print('AUCUN')

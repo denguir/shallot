@@ -44,7 +44,7 @@ class Host(object):
                 if s is self.server:
                     # Establish a new connection and put it in the buffer
                     conn, addr = s.accept()
-                    print("in:", addr)
+                    print("connection from :", addr[0], addr[1], '\t to:', self.ip_addr, self.port_in)
                     conn.setblocking(0)
                     self.inputs.append(conn)
                     self.buffer[conn] = queue.Queue()
@@ -75,7 +75,7 @@ class Host(object):
                     self.on_data(next_msg, s)
 
             for s in exceptional:
-                # if there is any error on the input, close the connection
+                # if there is any error on the inputs, close the connection
                 self.inputs.remove(s)
                 if s in self.outputs:
                     self.outputs.remove(s)
@@ -86,10 +86,11 @@ class Host(object):
         self.alive = False
 
     def connect(self, ip, port):
+        # if the connection is already established, use it
         for s in self.outputs:
             if s.getsockname == (ip, port):
                 return s
-
+        # else, create a new connection, with an used port number
         new_s = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
         new_s.bind((self.ip_addr, self.port_out + self.i))
         self.i += 1
