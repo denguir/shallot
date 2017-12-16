@@ -8,11 +8,14 @@ class Receiver(Host):
         self.KeyID_key = {}
         self.listen()
 
-    def generate_key_from_sender(self, ip_sender, port_sender, key_id, public_key_sender):
+    def generate_key_from_sender(self, ip_sender, port_sender, message):
         '''1) Generate a public key with the key ID specified by the sender
            2) Send the public key to the sender
            3) Generate shared key between the sender and the replier.'''
 
+        key_id = message[32:64]
+        public_key_sender_bin = message[1092:2116]
+        public_key_sender = int(public_key_sender_bin,2)
         new_key = Key(key_id)
         self.KeyID_key.update({key_id:new_key})
         self.send_key_reply(ip_sender, port_sender, new_key.get_key_id(), new_key.get_public_key())
@@ -47,14 +50,14 @@ class Receiver(Host):
         if data_type is MESSAGE_RELAY : send to next hop
         if data_type is ERROR :
         """
+        data = str(data)[2:]
         ip_origin,port_origin=conn.getsockname()
-        data = str(data)
         version=data[0:4]
         msg_type=data[4:8]
         msg_length=data[16:32]
         if msg_type == '0000':
             # MSG TYPE = KEY_INIT
-            self.generate_key_from_sender(ip_origin,port_origin, data)
+            self.generate_key_from_sender(ip_origin,port_origin,data)
             print('KEY_INIT')
         elif msg_type == '0001':
             # MSG TYPE = KEY_REPLY
