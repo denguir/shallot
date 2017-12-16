@@ -8,11 +8,14 @@ class Relay(Host):
         self.KeyID_key = {}
         self.listen()
 
-    def generate_key_from_sender(self, ip_sender, port_sender, key_id, public_key_sender):
+    def generate_key_from_sender(self, ip_sender, port_sender, message):
         '''1) Generate a public key with the key ID specified by the sender
            2) Send the public key to the sender
            3) Generate shared key between the sender and the replier.'''
 
+        key_id = message[32:64]
+        public_key_sender_bin = message[1092:2116]
+        public_key_sender = int(public_key_sender_bin,2)
         new_key = Key(key_id)
         self.KeyID_key.update({key_id:new_key})
         self.send_key_reply(ip_sender, port_sender, new_key.get_key_id(), new_key.get_public_key())
@@ -25,25 +28,54 @@ class Relay(Host):
 
         body = key_id + '{:01024b}'.format(public_key)
 
-        msg_length = '{:016b}'.format(len(body))
+        msg_length = self.compute_msg_length(body)
+
         header = version + msg_type + msg_empty_space + msg_length
         self.send(header + body, ip_address,port)
 
-    def send_public_key(self, ip_address, port, key_id, public_key):
-        self.send(msg, ip_address, port)
+    def compute_msg_length(self, body):
+        optional_padding1 = (len(body)%8)*(' ')
+        body += optional_padding1
+        optional_padding2 = int((len(body)/8)%4)*('    ')
+        body += optional_padding2
+        return '{:016b}'.format(int(((len(body)/8)+4)/4))
 
-    def decrypt_shallot(self, key_id, shallot):
+    def decrypt_shallot(self,item):
         '''Decrypt the message enc using the AES algorithm'''
+        word=""
+        counter=32
+        while counter!=64:
+       	    word+=item[counter]
+            counter+=1
+        key_id=int(word,2)
+        message_to_send=self.KeyID_key[key_id].cipher.decrypt(item[counter :])
+        ip_next_hop=""
+        for i in range(4):
+            ip_next_hop+=string(int(message_to_send[counter+8*i:counter+8*(i+1)]))
+            ip_next_hop+="."
+        port=string(int(message_to_send[counter+32:counter+64],2))
+        nxt_msg=message_to_send[counter+64:]
+        self.send(nxt_msg,ip_next_hop,port)
         return self.keys[key_id].cipher.decrypt(shallot)
 
-    def on_data(self, ip_origin, port_origin):
-        """
-        if data_type is KEY_INIT : apply generate_key_from_sender
-        if data_type is KEY_REPLY : reply
-        example:                if not self.buffer.empty():
-                                    msg = self.buffer.get()
-                                    key_id = msg[0:32]
-                                    public_key = msg[32:]
-        if data_type is MESSAGE_RELAY : send to next hop
-        if data_type is ERROR :
-        """
+    def on_data(self, data, conn):
+        data = str(data)[2:]
+        ip_origin,port_origin=conn.getsockname()
+        version=data[0:4]
+        msg_type=data[4:8]
+        msg_length=data[16:32]
+        if msg_type == '0000':
+            # MSG TYPE = KEY_INIT
+            # self.generate_key_from_sender(ip_origin,port_origin, data)
+            self.generate_key_from_sender('127.16.1.1',9000, data)
+            print('KEY_INIT')
+        elif msg_type == '0010':
+            # MSG TYPE = MESSAGE_RELAY
+            self.decrypt_shallot(data)
+            print('MESSAGE_RELAY')
+        elif msg_type == '0011':
+            # MSG TYPE = ERROR
+            self.send('ACK')
+            print('ERROR')
+        else:
+            print(data)

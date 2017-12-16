@@ -17,7 +17,7 @@ if __name__ == '__main__':
     relay2 = Relay('config/host_R3.ini')
 
     sp = Alice.shortest_path(topo, '127.16.4.2')
-    print(sp)
+    #print(sp)
 
     Alice.initialyze_keys(sp)
 

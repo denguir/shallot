@@ -15,7 +15,8 @@ class Host(object):
     __metaclass__  = ABCMeta
     def __init__(self, config_file):
         super(Host, self).__init__()
-        self.ip_addr, self.port = self.init_address(config_file)
+        self.ip_addr, self.port_in = self.init_address(config_file)
+        self.port_out = self.port_in + 1000
         self.alive = True
         self.buffer = queue.Queue()
         self.i = 1
@@ -29,31 +30,47 @@ class Host(object):
 
     @threaded
     def listen(self):
-        s=socket.socket(socket.AF_INET,socket.SOCK_STREAM)
-        s.bind((self.ip_addr, self.port))
-        s.listen(5) # length of the network
-        BUFFER_SIZE = 4096
+        # s=socket.socket(socket.AF_INET,socket.SOCK_STREAM)
+        # s.bind((self.ip_addr, self.port_in))
+        # s.listen(5) # length of the network
+        # BUFFER_SIZE = 4096
 
-        while self.alive:
-            conn, addr = s.accept()
-            data = conn.recv(BUFFER_SIZE)
-            if data:
-                self.buffer.put(data)
-                self.on_data(addr[0], addr[1])
+        # while self.alive:
+        #     conn, addr = s.accept()
+        #     data = conn.recv(BUFFER_SIZE)
+        #     if data:
+        #         self.buffer.put(data)
+        #         self.on_data(addr[0], addr[1])
 
 
-            else: break
-            print("received data:", data)
-            conn.close()
+        #     else: break
+        #     print("received data:", data)
+        #     conn.close()
+
+        BUFFER_SIZE = 4096  # Normally 1024, but we want fast response
+
+        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        s.bind((self.ip_addr, self.port_in))
+        s.listen(1)
+
+        try:
+            while True:
+                conn, addr = s.accept()
+                print('Connection address:', addr)
+                data = conn.recv(BUFFER_SIZE)
+                if not data: break
+                self.on_data(data, conn)
+                conn.close()
+        except KeyboardInterrupt:
+            print("\n Server stopped")
 
     def stop(self):
         self.alive = False
 
     def connect(self, ip, port):
         s=socket.socket(socket.AF_INET,socket.SOCK_STREAM)
-        self.i += 1 
-        print(self.ip_addr, self.port+self.i)
-        s.bind((self.ip_addr, self.port+self.i))
+        print(self.ip_addr, self.port_in)
+        s.bind((self.ip_addr, self.port_in))
         try:
             s.connect((ip, port))
         except socket.error:
@@ -62,7 +79,16 @@ class Host(object):
 
     @threaded
     def send(self, msg, ip, port):
-        s = self.connect(ip,port)
+        # s = self.connect(ip,port)
+        # s.send(msg.encode('utf-8'))
+        # s.close()
+
+        BUFFER_SIZE = 4096
+
+        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        s.bind((self.ip_addr, self.port_out+self.i))
+        self.i += 1
+        s.connect((ip, port))
         s.send(msg.encode('utf-8'))
         s.close()
 
@@ -75,7 +101,7 @@ class Host(object):
 
     @abstractmethod
     @threaded
-    def on_data(self, ip_origin, port_origin):
+    def on_data(self, data, conn):
         """Handle the data on the basis of the type of msg
         ip_origin and port_origin refer to the address of the
         sender"""

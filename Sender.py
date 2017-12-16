@@ -13,7 +13,7 @@ class Sender(Host):
         self.IP_KeyID = {}
         self.g = 2
         self.p = 179769313486231590770839156793787453197860296048756011706444423684197180216158519368947833795864925541502180565485980503646440548199239100050792877003355816639229553136239076508735759914822574862575007425302077447712589550957937778424442426617334727629299387668709205606050270810842907692932019128194467627007
-        # self.listen()
+        self.listen()
 
     def dijkstra(self, topology, source):
         '''
@@ -76,13 +76,22 @@ class Sender(Host):
         msg_empty_space = '00000000'
 
         body = key_id + '{:04b}'.format(self.g) + '{:01024b}'.format(self.p) + '{:01024b}'.format(public_key)
-        msg_length = '{:016b}'.format(len(body))
+
+        msg_length = self.compute_msg_length(body)
+
         header = version + msg_type + msg_empty_space + msg_length
         self.send(header + body, ip_address,port)
 
-    def generate_key_from_replier(self, key_id, public_key_replier):
+    def compute_msg_length(self, body):
+        optional_padding1 = (len(body)%8)*(' ')
+        body += optional_padding1
+        optional_padding2 = int((len(body)/8)%4)*('    ')
+        body += optional_padding2
+        return '{:016b}'.format(int(((len(body)/8)+4)/4))
+
+    def generate_key_from_replier(self, message):
         '''Generate the shared key between the sender and the replier.'''
-        self.KeyID_key[key_id].generate_shared_key(public_key_replier)
+        self.KeyID_key[message[32:64]].generate_shared_key(int(message[64:1088],2))
 
     def encrypt(self, key_id, message):
         '''Encrypt the message raw using the AES algorithm'''
@@ -108,7 +117,7 @@ class Sender(Host):
 
             shallot = key_ID + shallot
         return shallot
-    
+
     def decrypt_shallot(self, keysID_order, message):
         '''The Sender can decrypt the entire shallot by using this function'''
         shallot = message
@@ -127,3 +136,28 @@ class Sender(Host):
 
     def dec_to_1024bits(self, integer):
         return '{:01024b}'.format(integer)
+
+    def on_data(self, data, conn):
+        data = str(data)[2:]
+        ip_origin,port_origin=conn.getsockname()
+        version=data[0:4]
+        msg_type=data[4:8]
+        msg_length=data[16:32]
+        if msg_type == '0000':
+            # MSG TYPE = KEY_INIT
+            self.generate_key_from_sender(ip_origin,port_origin,data)
+            print('KEY_INIT')
+        elif msg_type == '0001':
+            # MSG TYPE = KEY_REPLY
+            self.generate_key_from_replier(data)
+            print('KEY_REPLY')
+        elif msg_type == '0010':
+            # MSG TYPE = MESSAGE_RELAY
+            self.decrypt_shallot(data)
+            print('MESSAGE_RELAY')
+        elif msg_type == '0011':
+            # MSG TYPE = ERROR
+            self.send('ACK')
+            print('ERROR')
+        else:
+            print(data)
