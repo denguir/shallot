@@ -38,6 +38,7 @@ class Relay(Host):
 
     def on_data(self, data, conn):
         conn.send(data) # echo
+        print('ok')
 
         """
         if data_type is KEY_INIT : apply generate_key_from_sender

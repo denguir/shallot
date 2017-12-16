@@ -26,6 +26,7 @@ class Host(object):
         self.outputs = []
         self.alive = True
         self.buffer = {}
+        self.i = 0
 
     def init_address(self, config_file):
         config = configparser.ConfigParser()
@@ -34,19 +35,22 @@ class Host(object):
         port = config['host']['port']
         return ip, int(port)
 
+    @threaded
     def listen(self):
         BUFFER_SIZE = 4096
         while self.alive:
-            readable, writable, exceptional = select.select(self.inputs,
-            self.outputs, self.inputs)
+            readable, writable, exceptional = select.select(self.inputs, self.outputs, self.inputs)
             for s in readable:
                 if s is self.server:
+                    # Establish a new connection and put it in the buffer
                     conn, addr = s.accept()
                     print("in:", addr)
                     conn.setblocking(0)
                     self.inputs.append(conn)
                     self.buffer[conn] = queue.Queue()
                 else:
+                    # read the input socket and put it in outputs
+                    # to potentially reply through this connection
                     data = s.recv(BUFFER_SIZE)
                     if data:
                         self.buffer[s].put(data)
@@ -60,14 +64,18 @@ class Host(object):
                         del self.buffer[s]
 
             for s in writable:
+                # apply the on_data function on the available
+                # sockets of the outputs list
                 try:
                     next_msg = self.buffer[s].get_nowait()
-                except Queue.Empty:
+                except queue.Empty:
                     self.outputs.remove(s)
                 else:
+                    print(next_msg)
                     self.on_data(next_msg, s)
 
             for s in exceptional:
+                # if there is any error on the input, close the connection
                 self.inputs.remove(s)
                 if s in self.outputs:
                     self.outputs.remove(s)
@@ -83,7 +91,8 @@ class Host(object):
                 return s
 
         new_s = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
-        new_s.bind((self.ip_addr, self.port_out))
+        new_s.bind((self.ip_addr, self.port_out + self.i))
+        self.i += 1
         self.outputs.append(new_s)
         try:
             new_s.connect((ip, port))
