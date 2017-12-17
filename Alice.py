@@ -9,7 +9,7 @@ if __name__ == '__main__':
     Note: IP and Port are not yet implemented'''
     Alice = Sender('config/host_R1.ini')
 
-    sp = Alice.shortest_path(topo, '127.16.4.2')
+    sp = Alice.shortest_path(topo,('127.16.4.2',9010))
     print(sp)
 
     Alice.initialyze_keys(sp)
@@ -21,4 +21,4 @@ if __name__ == '__main__':
     print('Message à envoyer:', message)    
     
     shallot = Alice.build_shallot(sp, message)
-    Alice.send_shallot(sp[1], 9000, shallot)
+    Alice.send_shallot(sp[1][0], sp[1][1], shallot)

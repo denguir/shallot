@@ -8,17 +8,20 @@ class Topology(object):
         self.nodes = set()
         self.edges = dict()
         self.costs = dict()
+        self.ip_to_port = dict()
 
     def build(self, file):
         config = configparser.ConfigParser()
         config.read(file)
         for relay in config['relays']:
             ip, port = config['relays'][relay].split(' ')
-            self.nodes.add(ip)
+            self.nodes.add((ip,int(port)))
+            self.ip_to_port[ip] = int(port)
 
         for link in config['topology']:
             ips = config['topology'][link].split(' ')
-            self.edges[ips[0]] = ips[1:]
+            self.edges[(ips[0], self.ip_to_port[ips[0]])] = list(zip(ips[1:], [self.ip_to_port[ip] for ip in ips[1:]]))
+
         self.random_cost()
 
     def random_cost(self):

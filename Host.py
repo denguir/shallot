@@ -67,16 +67,6 @@ class Host(object):
     def stop(self):
         self.alive = False
 
-    def connect(self, ip, port):
-        s=socket.socket(socket.AF_INET,socket.SOCK_STREAM)
-        print(self.ip_addr, self.port_in)
-        s.bind((self.ip_addr, self.port_in))
-        try:
-            s.connect((ip, port))
-        except socket.error:
-            print('Connection failed')
-        return s
-
     @threaded
     def send(self, msg, ip, port):
         # s = self.connect(ip,port)
@@ -89,13 +79,6 @@ class Host(object):
         s.connect((ip, port))
         s.send(msg.encode('utf-8'))
         s.close()
-
-    # @threaded
-    # def key_reply(self):
-    #     self.buffer.get()[]
-    #     msg = self.buffer.get()
-    #     key_id = msg[0:32]
-    #     public_key = msg[32:]
 
     @abstractmethod
     @threaded

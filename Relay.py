@@ -8,7 +8,7 @@ class Relay(Host):
         self.KeyID_key = {}
         self.listen()
 
-    def generate_key_from_sender(self, ip_sender, port_sender, message):
+    def generate_key_from_sender(self, conn_with_sender, message): 
         '''1) Generate a public key with the key ID specified by the sender
            2) Send the public key to the sender
            3) Generate shared key between the sender and the replier.'''
@@ -18,10 +18,12 @@ class Relay(Host):
         public_key_sender = int(public_key_sender_bin,2)
         new_key = Key(key_id)
         self.KeyID_key.update({key_id:new_key})
-        self.send_key_reply(ip_sender, port_sender, new_key.get_key_id(), new_key.get_public_key())
+        self.send_key_reply(conn_with_sender, new_key.get_key_id(), new_key.get_public_key())
         new_key.generate_shared_key(public_key_sender)
 
-    def send_key_reply(self, ip_address, port, key_id, public_key):
+    def send_key_reply(self, conn_with_sender, key_id, public_key):
+        ''' 1) Generate a public key with the key ID specified by the sender'''
+
         version = '0001'
         msg_type = '0001'
         msg_empty_space = '00000000'
@@ -31,7 +33,7 @@ class Relay(Host):
         msg_length = self.compute_msg_length(body)
 
         header = version + msg_type + msg_empty_space + msg_length
-        self.send(header + body, ip_address,port)
+        conn_with_sender.send(str.encode(header+body))
 
     def send_message_relay(self, message_relay, ip_address, port):
         version = '0001'
@@ -56,10 +58,17 @@ class Relay(Host):
         #print(key_id)
         #print(self.KeyID_key)
         payload_deciphered=self.KeyID_key[key_id].cipher.decrypt(item[64:])
+
         ip_next_hop_bin=payload_deciphered[0:32]
         ip_next_hop = self.ip2dec(ip_next_hop_bin)
-        nxt_msg = payload_deciphered[32:]
-        self.send_message_relay(nxt_msg,ip_next_hop,9000)
+
+        port_next_hop_bin=payload_deciphered[32:64]
+        port_next_hop = int(port_next_hop_bin,2)
+
+        nxt_msg = payload_deciphered[64:]
+
+        print(nxt_msg)
+        self.send_message_relay(nxt_msg,ip_next_hop,port_next_hop)
 
     def ip2dec(self, ip_bin):
         ip_dec = str(int(ip_bin[0:8],2))+'.'+str(int(ip_bin[8:16],2))+'.'+str(int(ip_bin[16:24],2))+'.'+str(int(ip_bin[24:32],2))
@@ -67,7 +76,6 @@ class Relay(Host):
 
     def on_data(self, data, conn):
         data = str(data)[2:]
-        ip_origin,port_origin=conn.getsockname()
         version=data[0:4]
         msg_type=data[4:8]
         msg_length=data[16:32]
@@ -75,7 +83,7 @@ class Relay(Host):
             # MSG TYPE = KEY_INIT
             # self.generate_key_from_sender(ip_origin,port_origin, data)
             print('KEY_INIT')
-            self.generate_key_from_sender('127.16.1.1',9000, data)
+            self.generate_key_from_sender(conn, data)
         elif msg_type == '0010':
             # MSG TYPE = MESSAGE_RELAY
             print('MESSAGE_RELAY')            

@@ -44,7 +44,7 @@ class Sender(Host):
             print('Shortest path research failed:')
             print('{} not in network'.format(destination))
         else:
-            weigths, previous_path = self.dijkstra(topology, self.ip_addr)
+            weigths, previous_path = self.dijkstra(topology, (self.ip_addr,self.port_in))
             path = []
             node = destination
             while node is not None:
@@ -55,7 +55,7 @@ class Sender(Host):
 
     def initialyze_keys(self,path):
         for i in range(1,len(path)):
-            self.generate_and_send_new_key(path[i],9000)
+            self.generate_and_send_new_key(path[i][0],path[i][1])
 
     def generate_and_send_new_key(self, ip_address, port):
         '''1) Generate a Key object in which will be stored a unique Key ID and a public key.
@@ -119,12 +119,15 @@ class Sender(Host):
         path.append(path[-1])
         path.reverse()
         for i in range(1,len(path)-1):
-            IP = path[i]
+            IP = path[i][0]
+            PORT = path[i][1]
             key_ID = self.IP_KeyID[IP]
 
-            IP_next = path[i-1]
+            IP_next = path[i-1][0]
+            PORT_next = path[i-1][1]
             binary_IP_next = self.ip2bin(IP_next)
-            shallot = self.encrypt(key_ID,binary_IP_next+shallot)
+            binary_PORT_next = self.dec_to_32bits(PORT_next)
+            shallot = self.encrypt(key_ID,binary_IP_next+binary_PORT_next+shallot)
 
             shallot = key_ID + shallot
         path.reverse()
@@ -151,14 +154,13 @@ class Sender(Host):
 
     def on_data(self, data, conn):
         data = str(data)[2:]
-        ip_origin,port_origin=conn.getsockname()
         version=data[0:4]
         msg_type=data[4:8]
         msg_length=data[16:32]
         if msg_type == '0000':
             # MSG TYPE = KEY_INIT
             print('KEY_INIT')
-            self.generate_key_from_sender(ip_origin,port_origin,data)
+            self.generate_key_from_sender(conn,data)
         elif msg_type == '0001':
             # MSG TYPE = KEY_REPLY
             print('KEY_REPLY')
