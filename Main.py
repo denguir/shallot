@@ -17,9 +17,18 @@ if __name__ == '__main__':
     relay2 = Relay('config/host_R3.ini')
 
     sp = Alice.shortest_path(topo, '127.16.4.2')
-    #print(sp)
+    print(sp)
 
     Alice.initialyze_keys(sp)
+
+    while Alice.init_keys_done != len(sp)-1:
+        pass
+
+    message = 'Gros caca de Alice'
+    print('Message à envoyer:', message)    
+    shallot = Alice.build_shallot(sp, message)
+    Alice.send_shallot(sp[1], 9000, shallot)
+
 
     '''Key negotiation with Bob'''
     # Bob_KeyID = Alice.IP_KeyID[Bob.ip_addr]

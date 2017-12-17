@@ -33,6 +33,16 @@ class Relay(Host):
         header = version + msg_type + msg_empty_space + msg_length
         self.send(header + body, ip_address,port)
 
+    def send_message_relay(self, message_relay, ip_address, port):
+        version = '0001'
+        msg_type = '0010'
+        msg_empty_space = '00000000'
+
+        msg_length = self.compute_msg_length(message_relay)
+
+        header = version + msg_type + msg_empty_space + msg_length
+        self.send(header + message_relay, ip_address,port)
+
     def compute_msg_length(self, body):
         optional_padding1 = (len(body)%8)*(' ')
         body += optional_padding1
@@ -42,21 +52,18 @@ class Relay(Host):
 
     def decrypt_shallot(self,item):
         '''Decrypt the message enc using the AES algorithm'''
-        word=""
-        counter=32
-        while counter!=64:
-       	    word+=item[counter]
-            counter+=1
-        key_id=int(word,2)
-        message_to_send=self.KeyID_key[key_id].cipher.decrypt(item[counter :])
-        ip_next_hop=""
-        for i in range(4):
-            ip_next_hop+=string(int(message_to_send[counter+8*i:counter+8*(i+1)]))
-            ip_next_hop+="."
-        port=string(int(message_to_send[counter+32:counter+64],2))
-        nxt_msg=message_to_send[counter+64:]
-        self.send(nxt_msg,ip_next_hop,port)
-        return self.keys[key_id].cipher.decrypt(shallot)
+        key_id=item[32:64]
+        #print(key_id)
+        #print(self.KeyID_key)
+        payload_deciphered=self.KeyID_key[key_id].cipher.decrypt(item[64:])
+        ip_next_hop_bin=payload_deciphered[0:32]
+        ip_next_hop = self.ip2dec(ip_next_hop_bin)
+        nxt_msg = payload_deciphered[32:]
+        self.send_message_relay(nxt_msg,ip_next_hop,9000)
+
+    def ip2dec(self, ip_bin):
+        ip_dec = str(int(ip_bin[0:8],2))+'.'+str(int(ip_bin[8:16],2))+'.'+str(int(ip_bin[16:24],2))+'.'+str(int(ip_bin[24:32],2))
+        return ip_dec
 
     def on_data(self, data, conn):
         data = str(data)[2:]
@@ -67,15 +74,15 @@ class Relay(Host):
         if msg_type == '0000':
             # MSG TYPE = KEY_INIT
             # self.generate_key_from_sender(ip_origin,port_origin, data)
-            self.generate_key_from_sender('127.16.1.1',9000, data)
             print('KEY_INIT')
+            self.generate_key_from_sender('127.16.1.1',9000, data)
         elif msg_type == '0010':
             # MSG TYPE = MESSAGE_RELAY
+            print('MESSAGE_RELAY')            
             self.decrypt_shallot(data)
-            print('MESSAGE_RELAY')
         elif msg_type == '0011':
             # MSG TYPE = ERROR
-            self.send('ACK')
             print('ERROR')
+            self.send('ACK')
         else:
             print(data)

@@ -40,9 +40,21 @@ class Receiver(Host):
         body += optional_padding2
         return '{:016b}'.format(int(((len(body)/8)+4)/4))
 
-    def decrypt_shallot(self, key_id, shallot):
+    def decrypt_shallot(self,item):
         '''Decrypt the message enc using the AES algorithm'''
-        return self.keys[key_id].cipher.decrypt(shallot)
+        key_id=item[32:64]
+        #print(key_id)
+        #print(self.KeyID_key)
+        payload_deciphered=self.KeyID_key[key_id].cipher.decrypt(item[64:])
+        ip_next_hop_bin=payload_deciphered[0:32]
+        ip_next_hop = self.ip2dec(ip_next_hop_bin)
+        if ip_next_hop == self.ip_addr:
+        	nxt_msg = payload_deciphered[32:]
+        	print('Message reçu par Bob:',nxt_msg)
+
+    def ip2dec(self, ip_bin):
+        ip_dec = str(int(ip_bin[0:8],2))+'.'+str(int(ip_bin[8:16],2))+'.'+str(int(ip_bin[16:24],2))+'.'+str(int(ip_bin[24:32],2))
+        return ip_dec
 
     def key_reply(self):
         self.buffer.get()
@@ -56,15 +68,15 @@ class Receiver(Host):
         if msg_type == '0000':
             # MSG TYPE = KEY_INIT
             # self.generate_key_from_sender(ip_origin,port_origin, data)
-            self.generate_key_from_sender('127.16.1.1',9000, data)
             print('KEY_INIT')
+            self.generate_key_from_sender('127.16.1.1',9000, data)
         elif msg_type == '0010':
             # MSG TYPE = MESSAGE_RELAY
+            print('MESSAGE_RELAY')            
             self.decrypt_shallot(data)
-            print('MESSAGE_RELAY')
         elif msg_type == '0011':
             # MSG TYPE = ERROR
-            self.send('ACK')
             print('ERROR')
+            self.send('ACK')
         else:
             print(data)

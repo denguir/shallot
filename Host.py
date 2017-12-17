@@ -83,8 +83,6 @@ class Host(object):
         # s.send(msg.encode('utf-8'))
         # s.close()
 
-        BUFFER_SIZE = 4096
-
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         s.bind((self.ip_addr, self.port_out+self.i))
         self.i += 1

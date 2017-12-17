@@ -14,6 +14,7 @@ class Sender(Host):
         self.g = 2
         self.p = 179769313486231590770839156793787453197860296048756011706444423684197180216158519368947833795864925541502180565485980503646440548199239100050792877003355816639229553136239076508735759914822574862575007425302077447712589550957937778424442426617334727629299387668709205606050270810842907692932019128194467627007
         self.listen()
+        self.init_keys_done = 0
 
     def dijkstra(self, topology, source):
         '''
@@ -82,6 +83,16 @@ class Sender(Host):
         header = version + msg_type + msg_empty_space + msg_length
         self.send(header + body, ip_address,port)
 
+    def send_shallot(self, ip_address, port, shallot):
+        version = '0001'
+        msg_type = '0010'
+        msg_empty_space = '00000000'
+
+        msg_length = self.compute_msg_length(shallot)
+
+        header = version + msg_type + msg_empty_space + msg_length
+        self.send(header + shallot, ip_address,port)
+
     def compute_msg_length(self, body):
         optional_padding1 = (len(body)%8)*(' ')
         body += optional_padding1
@@ -92,6 +103,7 @@ class Sender(Host):
     def generate_key_from_replier(self, message):
         '''Generate the shared key between the sender and the replier.'''
         self.KeyID_key[message[32:64]].generate_shared_key(int(message[64:1088],2))
+        self.init_keys_done += 1
 
     def encrypt(self, key_id, message):
         '''Encrypt the message raw using the AES algorithm'''
@@ -105,17 +117,17 @@ class Sender(Host):
         '''Build the shallot based on the order of the keys ID'''
         shallot = message
         path.append(path[-1])
-        path.reverse
+        path.reverse()
         for i in range(1,len(path)-1):
             IP = path[i]
             key_ID = self.IP_KeyID[IP]
 
             IP_next = path[i-1]
             binary_IP_next = self.ip2bin(IP_next)
-            print(key_ID,binary_IP_next+shallot)
             shallot = self.encrypt(key_ID,binary_IP_next+shallot)
 
             shallot = key_ID + shallot
+        path.reverse()
         return shallot
 
     def decrypt_shallot(self, keysID_order, message):
@@ -145,19 +157,19 @@ class Sender(Host):
         msg_length=data[16:32]
         if msg_type == '0000':
             # MSG TYPE = KEY_INIT
-            self.generate_key_from_sender(ip_origin,port_origin,data)
             print('KEY_INIT')
+            self.generate_key_from_sender(ip_origin,port_origin,data)
         elif msg_type == '0001':
             # MSG TYPE = KEY_REPLY
-            self.generate_key_from_replier(data)
             print('KEY_REPLY')
+            self.generate_key_from_replier(data)
         elif msg_type == '0010':
             # MSG TYPE = MESSAGE_RELAY
-            self.decrypt_shallot(data)
             print('MESSAGE_RELAY')
+            self.decrypt_shallot(data)
         elif msg_type == '0011':
             # MSG TYPE = ERROR
-            self.send('ACK')
             print('ERROR')
+            self.send('ACK')
         else:
             print(data)
