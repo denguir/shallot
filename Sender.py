@@ -81,7 +81,7 @@ class Sender(Host):
         msg_length = self.compute_msg_length(body)
 
         header = version + msg_type + msg_empty_space + msg_length
-        self.send(header + body, ip_address,port)
+        self.send_keyInit(header + body, ip_address,port)
 
     def send_shallot(self, ip_address, port, shallot):
         version = '0001'
@@ -157,21 +157,14 @@ class Sender(Host):
         version=data[0:4]
         msg_type=data[4:8]
         msg_length=data[16:32]
-        if msg_type == '0000':
-            # MSG TYPE = KEY_INIT
-            print('KEY_INIT')
-            self.generate_key_from_sender(conn,data)
-        elif msg_type == '0001':
+        if msg_type == '0001':
             # MSG TYPE = KEY_REPLY
             print('KEY_REPLY')
             self.generate_key_from_replier(data)
-        elif msg_type == '0010':
-            # MSG TYPE = MESSAGE_RELAY
-            print('MESSAGE_RELAY')
-            self.decrypt_shallot(data)
         elif msg_type == '0011':
             # MSG TYPE = ERROR
             print('ERROR')
             self.send('ACK')
         else:
             print(data)
+            

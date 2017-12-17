@@ -19,6 +19,8 @@ class Host(object):
         self.port_out = self.port_in + 1000
         self.alive = True
         self.buffer = queue.Queue()
+        self.s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.s.bind((self.ip_addr, self.port_out))
         self.i = 1
 
     def init_address(self, config_file):
@@ -47,7 +49,7 @@ class Host(object):
         #     print("received data:", data)
         #     conn.close()
 
-        BUFFER_SIZE = 4096  # Normally 1024, but we want fast response
+        BUFFER_SIZE = 4096
 
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         s.bind((self.ip_addr, self.port_in))
@@ -73,12 +75,23 @@ class Host(object):
         # s.send(msg.encode('utf-8'))
         # s.close()
 
+        self.s.connect((ip, port))
+        self.s.send(msg.encode('utf-8'))
+
+    @threaded
+    def send_keyInit(self, msg, ip, port):
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         s.bind((self.ip_addr, self.port_out+self.i))
         self.i += 1
         s.connect((ip, port))
         s.send(msg.encode('utf-8'))
+
+        BUFFER_SIZE = 4096
+
+        data = s.recv(BUFFER_SIZE)
+        self.on_data(data, None)
         s.close()
+
 
     @abstractmethod
     @threaded

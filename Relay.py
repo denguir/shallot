@@ -14,6 +14,8 @@ class Relay(Host):
            3) Generate shared key between the sender and the replier.'''
 
         key_id = message[32:64]
+        g = int(message[64:68],2)
+        p = int(message[68:1092],2)
         public_key_sender_bin = message[1092:2116]
         public_key_sender = int(public_key_sender_bin,2)
         new_key = Key(key_id)
@@ -34,6 +36,7 @@ class Relay(Host):
 
         header = version + msg_type + msg_empty_space + msg_length
         conn_with_sender.send(str.encode(header+body))
+        conn_with_sender.close()
 
     def send_message_relay(self, message_relay, ip_address, port):
         version = '0001'
@@ -81,7 +84,6 @@ class Relay(Host):
         msg_length=data[16:32]
         if msg_type == '0000':
             # MSG TYPE = KEY_INIT
-            # self.generate_key_from_sender(ip_origin,port_origin, data)
             print('KEY_INIT')
             self.generate_key_from_sender(conn, data)
         elif msg_type == '0010':
@@ -93,4 +95,4 @@ class Relay(Host):
             print('ERROR')
             self.send('ACK')
         else:
-            print(data)
+            print(data) 
