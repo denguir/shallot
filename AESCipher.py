@@ -1,4 +1,4 @@
-#https://gist.github.com/gustavohenrique/79cc95cc351d975a075f18a5c9f49319
+# Code found on: https://gist.github.com/gustavohenrique/79cc95cc351d975a075f18a5c9f49319
 import sys
 import base64
 from Crypto.Cipher import AES

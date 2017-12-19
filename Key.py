@@ -1,11 +1,11 @@
 from diffiehellman.diffiehellman import DiffieHellman
-#https://github.com/chrisvoncsefalvay/diffiehellman
+# diffiehellman found on: https://github.com/chrisvoncsefalvay/diffiehellman
 
 import binascii
 from AESCipher import AESCipher
 
 class Key(DiffieHellman):
-    """Key object which stores the key ID, the public key and the share key between 2 entities."""
+    '''Key object which stores the key ID, the public key and the shared key between 2 entities.'''
     def __init__(self, key_id, g_parameter, p_parameter):
         DiffieHellman.__init__(self, g_parameter, p_parameter)
         self.key_id = key_id
@@ -20,12 +20,8 @@ class Key(DiffieHellman):
         '''Return the public key.'''
         return self.public_key
 
-    def get_shared_key(self):
-        '''Return the shared key between 2 entities and will be used for the encryption.'''
-        return self.shared_key
-
     def generate_shared_key(self, other_public_key):
-        '''Generate the shared key between 2 entities.'''
-        self.generate_shared_secret(other_public_key)
-        key = binascii.unhexlify(self.shared_key)
+        '''Generate the shared key between 2 entities and a AESCipher object for the encryption.'''
+        self.generate_shared_secret(other_public_key) # function from the diffiehellman module that generates the shared key
+        key = binascii.unhexlify(self.shared_key) # Convert in the appropriate format for the AESCipher module
         self.cipher = AESCipher(key)
