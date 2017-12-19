@@ -2,6 +2,7 @@ from utils.digit_conversion import *
 from utils.dijkstra import *
 from Host import Host
 from Key import Key
+import socket
 import configparser
 
 
@@ -75,6 +76,20 @@ class Sender(Host):
         header = version + msg_type + msg_empty_space + msg_length
         self.handshake(header + body, ip_address,port)
 
+    def handshake(self, msg, ip, port):
+        '''Initialyze the key with a specified relay or receiver'''
+        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        s.bind((self.ip_addr, self.port_out))
+        s.connect((ip, port))
+        s.send(msg.encode('utf-8'))
+
+        BUFFER_SIZE = 4096
+
+        data = s.recv(BUFFER_SIZE)
+        self.on_data(data, None)
+        s.close()
+
     def send_shallot(self, ip_address, port, shallot):
         '''Send the shallot in the specified format for this project.'''
         version = '0001'
@@ -133,7 +148,7 @@ class Sender(Host):
         return shallot
 
     def on_data(self, data, conn):
-        '''Execute the appropriate function based on the received data '''
+        '''Execute the appropriate function based on the received type data '''
         data = str(data)[2:]
         version=data[0:4]
         msg_type=data[4:8]
