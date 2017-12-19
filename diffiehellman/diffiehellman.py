@@ -34,7 +34,6 @@ from hashlib import sha256
 
 from .decorators import requires_private_key
 from .exceptions import MalformedPublicKey, RNGError
-from .primes import PRIMES
 
 try:
     from ssl import RAND_bytes
@@ -50,12 +49,13 @@ class DiffieHellman:
     """
 
     def __init__(self,
-                 group=2,
+                 g_parameter,
+                 p_parameter,
                  key_length=640):
 
         self.key_length = max(200, key_length)
-        self.generator = PRIMES[group]["generator"]
-        self.prime = PRIMES[group]["prime"]
+        self.generator = g_parameter
+        self.prime = p_parameter
 
     def generate_private_key(self):
         """
@@ -73,9 +73,6 @@ class DiffieHellman:
             key = int(hex(rng(key_length)), base=16)
 
         self.__private_key = key
-
-    def verify_public_key(self, other_public_key):
-        return self.prime - 1 > other_public_key > 2 and pow(other_public_key, (self.prime - 1) // 2, self.prime) == 1
 
     @requires_private_key
     def generate_public_key(self):
@@ -101,8 +98,6 @@ class DiffieHellman:
         :return: void
         :rtype: void
         """
-        if self.verify_public_key(other_public_key) is False:
-            raise MalformedPublicKey
 
         self.shared_secret = pow(other_public_key,
                                  self.__private_key,
