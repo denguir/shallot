@@ -20,7 +20,7 @@ class Receiver(Host):
         p = int(message[68:1092],2)
         public_key_sender_bin = message[1092:2116]
         public_key_sender = int(public_key_sender_bin,2)
-        new_key = Key(key_id)
+        new_key = Key(key_id, g, p)
         self.KeyID_key.update({key_id:new_key})
         self.send_key_reply(conn_with_sender, new_key.get_key_id(), new_key.get_public_key())
         new_key.generate_shared_key(public_key_sender)
@@ -53,7 +53,7 @@ class Receiver(Host):
 
         if ip_next_hop == self.ip_addr:
         	nxt_msg = payload_deciphered[64:]
-        	print('Message reçu par Bob:',nxt_msg)
+        	print('Message reçu par Bob:',nxt_msg, '\n')
 
     def on_data(self, data, conn):
         data = str(data)[2:]

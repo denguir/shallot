@@ -20,7 +20,7 @@ class Relay(Host):
         p = int(message[68:1092],2)
         public_key_sender_bin = message[1092:2116]
         public_key_sender = int(public_key_sender_bin,2)
-        new_key = Key(key_id)
+        new_key = Key(key_id, g, p)
         self.KeyID_key.update({key_id:new_key})
         self.send_key_reply(conn_with_sender, new_key.get_key_id(), new_key.get_public_key())
         new_key.generate_shared_key(public_key_sender)
@@ -63,7 +63,7 @@ class Relay(Host):
 
         nxt_msg = payload_deciphered[64:]
 
-        print(nxt_msg)
+        print(nxt_msg, '\n')
         self.send_message_relay(nxt_msg,ip_next_hop,port_next_hop)
 
     def on_data(self, data, conn):

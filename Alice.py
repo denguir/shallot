@@ -18,10 +18,14 @@ if __name__ == '__main__':
     while Alice.init_keys_done != len(sp)-1:
         pass
 
-    message = 'Gros caca de Alice'
-    print('Message à envoyer:', message)
+    message1 = 'Gros caca de Alice'
+    print('Message à envoyer:', message1)
 
-    shallot = Alice.build_shallot(sp, message)
-    Alice.send_shallot(sp[1][0], sp[1][1], shallot)
+    shallot1 = Alice.build_shallot(sp, message1)
+    Alice.send_shallot(sp[1][0], sp[1][1], shallot1)
     time.sleep(0.1)
-    Alice.send_shallot(sp[1][0], sp[1][1], shallot)
+
+    message2 = 'Deuxieme gros caca de Alice'
+    print('Message à envoyer:', message2)
+    shallot2 = Alice.build_shallot(sp, message2)
+    Alice.send_shallot(sp[1][0], sp[1][1], shallot2)

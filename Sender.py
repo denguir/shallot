@@ -39,7 +39,7 @@ class Sender(Host):
         '''1) Generate a Key object in which will be stored a unique Key ID and a public key.
            2) Send the key ID and the public key to the other entities'''
         key_id = self.generate_key_id()
-        new_key = Key(key_id)
+        new_key = Key(key_id, self.g, self.p)
         self.KeyID_key.update({key_id:new_key})
         self.IP_KeyID.update({ip_address:key_id})
         self.send_key_init(ip_address, port, new_key.get_key_id(), new_key.get_public_key())
