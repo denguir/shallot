@@ -97,7 +97,7 @@ class Sender(Host):
         IP = path[0][0] # IP used to find the Key ID in the dico self.IP_KeyID
         PORT = path[0][1]
         key_ID = self.IP_KeyID[IP] # Key ID used to find the shared key with the relay/receiver in the dico KeyID_key = {}
-        IP_next = path[0][0] # IP_next = IP
+        IP_next = path[0][0] # IP_next(Receiver) = IP(Receiver) when the receiver will decipher the shallot
         PORT_next = path[0][1]
         binary_IP_next = ip2bin(IP_next)
         binary_PORT_next = dec_to_32bits(PORT_next)
@@ -106,11 +106,11 @@ class Sender(Host):
 
         # Build the following layer for the relays
         for i in range(1,len(path)-1):
-            IP = path[i][0]
+            IP = path[i][0] # IP of the current relay
             PORT = path[i][1]
             key_ID = self.IP_KeyID[IP]
 
-            IP_next = path[i-1][0]
+            IP_next = path[i-1][0] # IP of the next relay or the receiver)
             PORT_next = path[i-1][1]
             binary_IP_next = ip2bin(IP_next)
             binary_PORT_next = dec_to_32bits(PORT_next)
