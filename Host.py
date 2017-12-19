@@ -13,7 +13,10 @@ def threaded(func):
     return run
 
 class Host(object):
-    """docstring for Server."""
+    """
+    Abstract class that runs in server mode (listen)
+        and client mode (write) in the same time
+    """
     __metaclass__  = ABCMeta
     def __init__(self, config_file):
         super(Host, self).__init__()
@@ -23,6 +26,8 @@ class Host(object):
         self.buffer = queue.Queue()
 
     def init_address(self, config_file):
+        '''read the <config_file> to attribute the ip and port
+            of a specified entity'''
         config = configparser.ConfigParser()
         config.read(config_file)
         ip = config['host']['ip']
@@ -31,6 +36,7 @@ class Host(object):
 
     @threaded
     def listen(self):
+        '''Always listen to new connections from the outside'''
         BUFFER_SIZE = 4096
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
@@ -51,14 +57,18 @@ class Host(object):
 
     @threaded
     def write(self):
+        '''Always check the buffer if there are some data to be sent'''
         while self.alive:
             data, conn = self.buffer.get()
             self.on_data(data, conn)
 
     def stop(self):
+        '''kill server and client mode'''
         self.alive = False
 
     def send(self, msg, ip, port):
+        '''send a message <msg> to a specified entity described by
+            its ip and port'''
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         s.bind((self.ip_addr, self.port_out))
@@ -66,6 +76,7 @@ class Host(object):
         s.send(msg.encode('utf-8'))
         s.close()
 
+<<<<<<< HEAD
     def send_error(self, conn, error_code):
         '''Send an error in the specified format for this project.'''
         version = '0001'
@@ -90,6 +101,8 @@ class Host(object):
         self.on_data(data, s)
         s.close()
 
+=======
+>>>>>>> 973a03e19c5e8b91f121687555b10e3d796d3fe2
     def compute_msg_length(self, body):
         padding = ' '
         optional_padding1 = (len(body)%8)*padding
@@ -100,6 +113,5 @@ class Host(object):
 
     @abstractmethod
     def on_data(self, data, conn):
-        """Handle the data on the basis of the type of msg
-        conn refers to the address of the
-        sender"""
+        """Handle the data on the basis of the type of the message type
+        <conn> refers to the connection established with the sender"""

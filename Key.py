@@ -8,7 +8,7 @@ class Key(DiffieHellman):
     '''Key object which stores the key ID, the public key and the shared key between 2 entities.'''
     def __init__(self, key_id, g_parameter, p_parameter):
         DiffieHellman.__init__(self, g_parameter, p_parameter)
-        self.key_id = key_id 
+        self.key_id = key_id
         self.generate_public_key()
         self.cipher = None
 

@@ -2,6 +2,8 @@ from utils.digit_conversion import *
 from utils.dijkstra import *
 from Host import Host
 from Key import Key
+import socket
+import configparser
 
 
 class Sender(Host):
@@ -17,7 +19,17 @@ class Sender(Host):
         self.listen()
         self.write()
 
+    def init_encryption_parameters(self, config_file):
+        config = configparser.ConfigParser()
+        config.read(config_file)
+        parameters = config['parameters']
+        self.g = int(parameters['g'])
+        self.p = int(parameters['p'])
+
     def shortest_path(self, topology, destination):
+        '''Use Dijkstra's algorithm to find the shortest path between Sender
+            and destination given a graph of class Topology : <topology>
+            <destination> is a tuple (ip : str, port : int)'''
         if destination not in topology.nodes:
             print('Shortest path research failed:')
             print('{} not in network'.format(destination))
@@ -29,11 +41,11 @@ class Sender(Host):
                 path.append(node)
                 node = previous_path[node]
             path.reverse()
-            # path.append(path[-1])
             return path
 
     def initialyze_keys(self,path):
-        '''Initialyze all the keys with the relays and the receiver in the path.'''
+        '''Initialyze all the keys with the relays and the receiver listed in the path
+            path should correspond to the shortest path found using shortest_path method'''
         for i in range(1,len(path)):
             self.generate_and_send_new_key(path[i][0],path[i][1])
 
@@ -63,6 +75,20 @@ class Sender(Host):
 
         header = version + msg_type + msg_empty_space + msg_length
         self.handshake(header + body_with_padding, ip_address,port)
+
+    def handshake(self, msg, ip, port):
+        '''Initialyze the key with a specified relay or receiver'''
+        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        s.bind((self.ip_addr, self.port_out))
+        s.connect((ip, port))
+        s.send(msg.encode('utf-8'))
+
+        BUFFER_SIZE = 4096
+
+        data = s.recv(BUFFER_SIZE)
+        self.on_data(data, None)
+        s.close()
 
     def send_shallot(self, ip_address, port, shallot):
         '''Send the shallot in the specified format for this project.'''
@@ -123,7 +149,7 @@ class Sender(Host):
             shallot = self.encrypt(key_ID,binary_IP_next+binary_PORT_next+shallot)
 
             shallot = key_ID + shallot
-            
+
         path.reverse()
         return shallot
 
@@ -132,7 +158,11 @@ class Sender(Host):
         return key_ID in self.KeyID_key
 
     def on_data(self, data, conn):
+<<<<<<< HEAD
         '''Execute the appropriate function based on the type of the received data'''
+=======
+        '''Execute the appropriate function based on the received type data '''
+>>>>>>> 973a03e19c5e8b91f121687555b10e3d796d3fe2
         data = str(data)[2:]
         version=data[0:4]
         msg_type=data[4:8]

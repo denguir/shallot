@@ -2,9 +2,8 @@ import math
 
 def dijkstra(topology, source):
     '''
-    Apply Dijkstra algorithm to find the route between Sender and Reicever
+    Apply Dijkstra algorithm to find the the shortest-path tree
     https://gist.github.com/econchick/4666413
-    http://alexhwoods.com/dijkstra/
     '''
     S = set()
     weights = dict.fromkeys(list(topology.nodes), math.inf)
