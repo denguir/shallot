@@ -26,6 +26,7 @@ s.listen(1)
 try:
     while True:
         conn, addr = s.accept()
+        print(conn)
         print('Connection address:', addr)
 
         data = conn.recv(BUFFER_SIZE)

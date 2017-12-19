@@ -7,6 +7,7 @@ class Receiver(Host):
         super(Receiver, self).__init__(config_file)
         self.KeyID_key = {}
         self.listen()
+        self.write()
 
     def generate_key_from_sender(self, conn_with_sender, message):
         '''1) Generate a public key with the key ID specified by the sender
@@ -78,7 +79,7 @@ class Receiver(Host):
             self.generate_key_from_sender(conn, data)
         elif msg_type == '0010':
             # MSG TYPE = MESSAGE_RELAY
-            print('MESSAGE_RELAY')            
+            print('MESSAGE_RELAY')
             self.decrypt_shallot(data)
         elif msg_type == '0011':
             # MSG TYPE = ERROR

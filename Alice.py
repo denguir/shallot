@@ -1,5 +1,6 @@
 from Topology import Topology
 from Sender import Sender
+import time
 
 if __name__ == '__main__':
     topo = Topology()
@@ -18,7 +19,9 @@ if __name__ == '__main__':
         pass
 
     message = 'Gros caca de Alice'
-    print('Message à envoyer:', message)    
-    
+    print('Message à envoyer:', message)
+
     shallot = Alice.build_shallot(sp, message)
+    Alice.send_shallot(sp[1][0], sp[1][1], shallot)
+    time.sleep(1)
     Alice.send_shallot(sp[1][0], sp[1][1], shallot)

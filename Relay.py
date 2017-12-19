@@ -7,8 +7,9 @@ class Relay(Host):
         super(Relay, self).__init__(config_file)
         self.KeyID_key = {}
         self.listen()
+        self.write()
 
-    def generate_key_from_sender(self, conn_with_sender, message): 
+    def generate_key_from_sender(self, conn_with_sender, message):
         '''1) Generate a public key with the key ID specified by the sender
            2) Send the public key to the sender
            3) Generate shared key between the sender and the replier.'''
@@ -88,11 +89,11 @@ class Relay(Host):
             self.generate_key_from_sender(conn, data)
         elif msg_type == '0010':
             # MSG TYPE = MESSAGE_RELAY
-            print('MESSAGE_RELAY')            
+            print('MESSAGE_RELAY')
             self.decrypt_shallot(data)
         elif msg_type == '0011':
             # MSG TYPE = ERROR
             print('ERROR')
             self.send('ACK')
         else:
-            print(data) 
+            print(data)
