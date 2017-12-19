@@ -51,9 +51,10 @@ class Receiver(Host):
         port_next_hop_bin=payload_deciphered[32:64]
         port_next_hop = int(port_next_hop_bin,2)
 
-        if ip_next_hop == self.ip_addr:
-        	nxt_msg = payload_deciphered[64:]
-        	print('Message reçu par Bob:',nxt_msg, '\n')
+        nxt_msg = payload_deciphered[64:]
+
+        if ip_next_hop == self.ip_addr:         
+            print('Message receive:',nxt_msg)
 
     def on_data(self, data, conn):
         data = str(data)[2:]
