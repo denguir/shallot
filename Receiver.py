@@ -31,9 +31,9 @@ class Receiver(Host):
         msg_type = '0001'
         msg_empty_space = '00000000'
 
-        #body = key_id + dec_to_1024bits(public_key)
+        body = key_id + dec_to_1024bits(public_key)
 
-        body = version + msg_type + msg_empty_space + dec_to_1024bits(public_key)
+        #body = version + msg_type + msg_empty_space + dec_to_1024bits(public_key)
 
         msg_length, body_with_padding = self.compute_msg_length(body)
 
