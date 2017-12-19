@@ -33,13 +33,11 @@ class Receiver(Host):
 
         body = key_id + dec_to_1024bits(public_key)
 
-        #body = version + msg_type + msg_empty_space + dec_to_1024bits(public_key)
-
         msg_length, body_with_padding = self.compute_msg_length(body)
 
         header = version + msg_type + msg_empty_space + msg_length
         conn_with_sender.send(str.encode(header+body_with_padding))
-        #conn_with_sender.close()
+        conn_with_sender.close()
 
     def decrypt_shallot(self, conn, item):
         '''Decrypt the message using the AES algorithm'''
@@ -55,7 +53,7 @@ class Receiver(Host):
 
             nxt_msg = payload_deciphered[64:]
 
-            if ip_next_hop == self.ip_addr:
+            if ip_next_hop == self.ip_addr:         
                 print('Message receive:',nxt_msg)
 
         else:
@@ -88,7 +86,6 @@ class Receiver(Host):
                 print('INVALID_MESSAGE_FORMAT')
             elif int(data[32:48],2) == 1:
                 print('INVALID_KEY_ID')
-            conn.close()
         else:
             print('ERROR')
             print('INVALID_MESSAGE_FORMAT')

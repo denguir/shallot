@@ -87,7 +87,7 @@ class Sender(Host):
         BUFFER_SIZE = 4096
 
         data = s.recv(BUFFER_SIZE)
-        self.on_data(data, None)
+        self.on_data(data, s)
         s.close()
 
     def send_shallot(self, ip_address, port, shallot):
@@ -173,7 +173,6 @@ class Sender(Host):
                 print('INVALID_MESSAGE_FORMAT')
             elif int(data[32:48],2) == 1:
                 print('INVALID_KEY_ID')
-            conn.close()
         else:
             print('ERROR')
             print('INVALID_MESSAGE_FORMAT')

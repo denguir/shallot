@@ -96,7 +96,6 @@ class Relay(Host):
                 print('INVALID_MESSAGE_FORMAT')
             elif int(data[32:48],2) == 1:
                 print('INVALID_KEY_ID')
-            conn.close()
         else:
             print('ERROR')
             print('INVALID_MESSAGE_FORMAT')
