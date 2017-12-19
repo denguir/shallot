@@ -59,10 +59,10 @@ class Sender(Host):
 
         body = key_id + dec_to_4bits(self.g) + dec_to_1024bits(self.p) + dec_to_1024bits(public_key)
 
-        msg_length = self.compute_msg_length(body)
+        msg_length, body_with_padding = self.compute_msg_length(body)
 
         header = version + msg_type + msg_empty_space + msg_length
-        self.handshake(header + body, ip_address,port)
+        self.handshake(header + body_with_padding, ip_address,port)
 
     def send_shallot(self, ip_address, port, shallot):
         '''Send the shallot in the specified format for this project.'''
@@ -70,15 +70,21 @@ class Sender(Host):
         msg_type = '0010'
         msg_empty_space = '00000000'
 
-        msg_length = self.compute_msg_length(shallot)
+        msg_length, shallot_with_padding = self.compute_msg_length(shallot)
 
         header = version + msg_type + msg_empty_space + msg_length
-        self.send(header + shallot, ip_address,port)
+        self.send(header + shallot_with_padding, ip_address,port)
 
-    def generate_key_from_replier(self, message):
+    def generate_key_from_replier(self, conn, message):
         '''Generate the shared key between the sender and the replier.'''
-        self.KeyID_key[message[32:64]].generate_shared_key(int(message[64:1088],2))
-        self.init_keys_done += 1
+        key_ID = message[32:64]
+        if self.check_key_ID_exist(key_ID):
+            self.KeyID_key[key_ID].generate_shared_key(int(message[64:1088],2))
+            self.init_keys_done += 1
+        else:
+            print('ERROR')
+            print('INVALID_KEY_ID')
+            self.send_error(conn, 1)
 
     def encrypt(self, key_id, message):
         '''Encrypt the message using the AES algorithm'''
@@ -121,8 +127,12 @@ class Sender(Host):
         path.reverse()
         return shallot
 
+    def check_key_ID_exist(self, key_ID):
+        '''Check if the Key ID is valid'''
+        return key_ID in self.KeyID_key
+
     def on_data(self, data, conn):
-        '''Execute the appropriate function based on the received data '''
+        '''Execute the appropriate function based on the type of the received data'''
         data = str(data)[2:]
         version=data[0:4]
         msg_type=data[4:8]
@@ -130,10 +140,17 @@ class Sender(Host):
         if msg_type == '0001':
             # MSG TYPE = KEY_REPLY
             print('KEY_REPLY')
-            self.generate_key_from_replier(data)
+            self.generate_key_from_replier(conn, data)
         elif msg_type == '0011':
             # MSG TYPE = ERROR
             print('ERROR')
-            self.send('ACK')
+            if int(data[32:48],2) == 0:
+                print('INVALID_MESSAGE_FORMAT')
+            elif int(data[32:48],2) == 1:
+                print('INVALID_KEY_ID')
+            conn.close()
         else:
-            print(data)
+            print('ERROR')
+            print('INVALID_MESSAGE_FORMAT')
+            self.send_error(conn, 0)
+            

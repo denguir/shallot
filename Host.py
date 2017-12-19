@@ -66,6 +66,18 @@ class Host(object):
         s.send(msg.encode('utf-8'))
         s.close()
 
+    def send_error(self, conn, error_code):
+        '''Send an error in the specified format for this project.'''
+        version = '0001'
+        msg_type = '0011'
+        msg_empty_space = '00000000'
+
+        msg_length, error_code_with_padding = self.compute_msg_length('{:016b}'.format(error_code))
+
+        header = version + msg_type + msg_empty_space + msg_length
+        conn.send(str.encode(header + error_code_with_padding))
+        conn.close()
+
     def handshake(self, msg, ip, port):
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
@@ -74,9 +86,8 @@ class Host(object):
         s.send(msg.encode('utf-8'))
 
         BUFFER_SIZE = 4096
-
         data = s.recv(BUFFER_SIZE)
-        self.on_data(data, None)
+        self.on_data(data, s)
         s.close()
 
     def compute_msg_length(self, body):
@@ -85,7 +96,7 @@ class Host(object):
         body += optional_padding1
         optional_padding2 = int((len(body)/8)%4)*4*padding
         body += optional_padding2
-        return dec_to_16bits(int(((len(body)/8)+4)/4))
+        return dec_to_16bits(int(((len(body)/8)+4)/4)), body
 
     @abstractmethod
     def on_data(self, data, conn):
