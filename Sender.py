@@ -29,6 +29,7 @@ class Sender(Host):
                 path.append(node)
                 node = previous_path[node]
             path.reverse()
+            # path.append(path[-1])
             return path
 
     def initialyze_keys(self,path):
@@ -87,8 +88,18 @@ class Sender(Host):
     def build_shallot(self, path, message):
         '''Build the shallot based on the order of the keys ID'''
         shallot = message
-        path.append(path[-1])
         path.reverse()
+
+        IP = path[0][0]
+        PORT = path[0][1]
+        key_ID = self.IP_KeyID[IP]
+        IP_next = path[0][0]
+        PORT_next = path[0][1]
+        binary_IP_next = ip2bin(IP_next)
+        binary_PORT_next = dec_to_32bits(PORT_next)
+        shallot = self.encrypt(key_ID,binary_IP_next+binary_PORT_next+shallot)
+        shallot = key_ID + shallot
+
         for i in range(1,len(path)-1):
             IP = path[i][0]
             PORT = path[i][1]
@@ -101,6 +112,7 @@ class Sender(Host):
             shallot = self.encrypt(key_ID,binary_IP_next+binary_PORT_next+shallot)
 
             shallot = key_ID + shallot
+            
         path.reverse()
         return shallot
 
