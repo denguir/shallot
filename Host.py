@@ -1,4 +1,5 @@
 from abc import ABCMeta, abstractmethod
+from utils.digit_conversion import *
 import configparser
 import threading
 import queue
@@ -31,12 +32,10 @@ class Host(object):
     @threaded
     def listen(self):
         BUFFER_SIZE = 4096
-
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         s.bind((self.ip_addr, self.port_in))
         s.listen(1)
-
         try:
             while self.alive:
                 conn, addr = s.accept()
@@ -79,8 +78,16 @@ class Host(object):
         self.on_data(data, None)
         s.close()
 
+    def compute_msg_length(self, body):
+        padding = ' '
+        optional_padding1 = (len(body)%8)*padding
+        body += optional_padding1
+        optional_padding2 = int((len(body)/8)%4)*4*padding
+        body += optional_padding2
+        return dec_to_16bits(int(((len(body)/8)+4)/4))
+
     @abstractmethod
     def on_data(self, data, conn):
         """Handle the data on the basis of the type of msg
-        ip_origin and port_origin refer to the address of the
+        conn refers to the address of the
         sender"""

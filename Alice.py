@@ -23,5 +23,5 @@ if __name__ == '__main__':
 
     shallot = Alice.build_shallot(sp, message)
     Alice.send_shallot(sp[1][0], sp[1][1], shallot)
-    time.sleep(1)
+    time.sleep(0.1)
     Alice.send_shallot(sp[1][0], sp[1][1], shallot)

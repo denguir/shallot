@@ -1,3 +1,4 @@
+from utils.digit_conversion import *
 from Key import Key
 from Host import Host
 
@@ -25,13 +26,11 @@ class Relay(Host):
         new_key.generate_shared_key(public_key_sender)
 
     def send_key_reply(self, conn_with_sender, key_id, public_key):
-        ''' 1) Generate a public key with the key ID specified by the sender'''
-
         version = '0001'
         msg_type = '0001'
         msg_empty_space = '00000000'
 
-        body = key_id + '{:01024b}'.format(public_key)
+        body = key_id + dec_to_1024bits(public_key)
 
         msg_length = self.compute_msg_length(body)
 
@@ -49,13 +48,6 @@ class Relay(Host):
         header = version + msg_type + msg_empty_space + msg_length
         self.send(header + message_relay, ip_address,port)
 
-    def compute_msg_length(self, body):
-        optional_padding1 = (len(body)%8)*(' ')
-        body += optional_padding1
-        optional_padding2 = int((len(body)/8)%4)*('    ')
-        body += optional_padding2
-        return '{:016b}'.format(int(((len(body)/8)+4)/4))
-
     def decrypt_shallot(self,item):
         '''Decrypt the message enc using the AES algorithm'''
         key_id=item[32:64]
@@ -64,7 +56,7 @@ class Relay(Host):
         payload_deciphered=self.KeyID_key[key_id].cipher.decrypt(item[64:])
 
         ip_next_hop_bin=payload_deciphered[0:32]
-        ip_next_hop = self.ip2dec(ip_next_hop_bin)
+        ip_next_hop = ip2dec(ip_next_hop_bin)
 
         port_next_hop_bin=payload_deciphered[32:64]
         port_next_hop = int(port_next_hop_bin,2)
@@ -73,10 +65,6 @@ class Relay(Host):
 
         print(nxt_msg)
         self.send_message_relay(nxt_msg,ip_next_hop,port_next_hop)
-
-    def ip2dec(self, ip_bin):
-        ip_dec = str(int(ip_bin[0:8],2))+'.'+str(int(ip_bin[8:16],2))+'.'+str(int(ip_bin[16:24],2))+'.'+str(int(ip_bin[24:32],2))
-        return ip_dec
 
     def on_data(self, data, conn):
         data = str(data)[2:]
