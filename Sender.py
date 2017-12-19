@@ -158,11 +158,6 @@ class Sender(Host):
         return key_ID in self.KeyID_key
 
     def on_data(self, data, conn):
-<<<<<<< HEAD
-        '''Execute the appropriate function based on the type of the received data'''
-=======
-        '''Execute the appropriate function based on the received type data '''
->>>>>>> 973a03e19c5e8b91f121687555b10e3d796d3fe2
         data = str(data)[2:]
         version=data[0:4]
         msg_type=data[4:8]

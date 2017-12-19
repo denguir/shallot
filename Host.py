@@ -76,7 +76,6 @@ class Host(object):
         s.send(msg.encode('utf-8'))
         s.close()
 
-<<<<<<< HEAD
     def send_error(self, conn, error_code):
         '''Send an error in the specified format for this project.'''
         version = '0001'
@@ -101,8 +100,6 @@ class Host(object):
         self.on_data(data, s)
         s.close()
 
-=======
->>>>>>> 973a03e19c5e8b91f121687555b10e3d796d3fe2
     def compute_msg_length(self, body):
         padding = ' '
         optional_padding1 = (len(body)%8)*padding
