@@ -29,7 +29,6 @@ class Sender(Host):
                 path.append(node)
                 node = previous_path[node]
             path.reverse()
-            # path.append(path[-1])
             return path
 
     def initialyze_keys(self,path):
@@ -112,7 +111,7 @@ class Sender(Host):
             shallot = self.encrypt(key_ID,binary_IP_next+binary_PORT_next+shallot)
 
             shallot = key_ID + shallot
-            
+
         path.reverse()
         return shallot
 
