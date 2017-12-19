@@ -63,7 +63,7 @@ class Relay(Host):
 
         nxt_msg = payload_deciphered[64:]
 
-        print(nxt_msg, '\n')
+        print(nxt_msg)
         self.send_message_relay(nxt_msg,ip_next_hop,port_next_hop)
 
     def on_data(self, data, conn):

@@ -39,6 +39,7 @@ class Host(object):
         try:
             while self.alive:
                 conn, addr = s.accept()
+                print(' ')
                 print('Connection address:', addr)
                 data = conn.recv(BUFFER_SIZE)
                 if data:
