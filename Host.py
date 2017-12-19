@@ -90,5 +90,4 @@ class Host(object):
     @abstractmethod
     def on_data(self, data, conn):
         """Handle the data on the basis of the type of msg
-        conn refers to the address of the
-        sender"""
+        conn refers to the address of the sender"""

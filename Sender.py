@@ -2,6 +2,7 @@ from utils.digit_conversion import *
 from utils.dijkstra import *
 from Host import Host
 from Key import Key
+import configparser
 
 
 class Sender(Host):
@@ -17,7 +18,17 @@ class Sender(Host):
         self.listen()
         self.write()
 
+    def init_encryption_parameters(self, config_file):
+        config = configparser.ConfigParser()
+        config.read(config_file)
+        parameters = config['parameters']
+        self.g = int(parameters['g'])
+        self.p = int(parameters['p'])
+
     def shortest_path(self, topology, destination):
+        '''Use Dijkstra's algorithm to find the shortest path between Sender
+            and destination given a graph of class Topology : <topology>
+            <destination> is a tuple (ip : str, port : int)'''
         if destination not in topology.nodes:
             print('Shortest path research failed:')
             print('{} not in network'.format(destination))
@@ -32,7 +43,8 @@ class Sender(Host):
             return path
 
     def initialyze_keys(self,path):
-        '''Initialyze all the keys with the relays and the receiver in the path.'''
+        '''Initialyze all the keys with the relays and the receiver listed in the path
+            path should correspond to the shortest path found using shortest_path method'''
         for i in range(1,len(path)):
             self.generate_and_send_new_key(path[i][0],path[i][1])
 
