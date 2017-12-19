@@ -13,7 +13,7 @@ if __name__ == '__main__':
 
     Alice = Sender(parentPath + '/config/host_R1.ini')
 
-    Alice.init_encryption_parameters(parentPath + '/config/encryption.ini')
+    #Alice.init_encryption_parameters(parentPath + '/config/encryption.ini')
 
     ip_bob = '127.16.4.2'
     port_bob = 9010
