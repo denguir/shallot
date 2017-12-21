@@ -20,9 +20,9 @@ class Relay(Host):
         p = int(message[68:1092],2) # Extract p parameter from the message sent by the Sender
         public_key_sender_bin = message[1092:2116] # Extract the public key from the message sent by the Sender
         public_key_sender = int(public_key_sender_bin,2) # Convert the public key from binary to decimal
-        new_key = Key(key_id, g, p) # Generate a new key
+        new_key = Key(g, p) # Generate a new key
         self.KeyID_key.update({key_id:new_key}) # update the dico with the link: Key ID - Object Key
-        self.send_key_reply(conn_with_sender, new_key.get_key_id(), new_key.get_public_key()) # Send the public key of the Receiver and the associated Key ID to Sender
+        self.send_key_reply(conn_with_sender, key_id, new_key.get_public_key()) # Send the public key of the Receiver and the associated Key ID to Sender
         new_key.generate_shared_key(public_key_sender) # Generate shared key with the public key of the Sender
 
     def send_key_reply(self, conn_with_sender, key_id, public_key):

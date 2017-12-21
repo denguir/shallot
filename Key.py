@@ -6,15 +6,10 @@ from AESCipher import AESCipher
 
 class Key(DiffieHellman):
     '''Key object which stores the key ID, the public key and the shared key between 2 entities.'''
-    def __init__(self, key_id, g_parameter, p_parameter):
+    def __init__(self, g_parameter, p_parameter):
         DiffieHellman.__init__(self, g_parameter, p_parameter)
-        self.key_id = key_id
         self.generate_public_key()
         self.cipher = None
-
-    def get_key_id(self):
-        '''Return the unique 32-bits key ID.'''
-        return self.key_id
 
     def get_public_key(self):
         '''Return the public key.'''
